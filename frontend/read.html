@@ -1,22 +1,106 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Read Letters</title>
-  <link rel="stylesheet" href="styles.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DearStranger — Read Letters</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;1,400&family=Lato:wght@300;400&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
 
-  <h2>Letters</h2>
+  <!-- NAVBAR -->
+  <nav class="ds-nav">
+    <div class="ds-logo">Dear<span>Stranger</span></div>
+    <div class="nav-links">
+      <button class="nav-link">Read</button>
+      <button class="nav-link">About</button>
+      <button class="nav-write">Write a letter</button>
+    </div>
+  </nav>
 
-  <div class="card">
-    <h3>Sample Title</h3>
-    <p>This is a sample letter...</p>
+  <!-- HERO -->
+  <div class="ds-hero">
+    <p class="hero-eyebrow">Anonymous Letters</p>
+    <h1 class="hero-title">Words from<br><em>someone, somewhere</em></h1>
+    <p class="hero-subtitle">Read what strangers dared to say</p>
+    <div class="ds-divider"></div>
   </div>
 
-  <div class="card">
-    <h3>Another Letter</h3>
-    <p>Some content here...</p>
+  <!-- FILTERS -->
+  <div class="ds-filters" id="filters">
+    <button class="filter-pill active" data-genre="All">All</button>
+    <button class="filter-pill" data-genre="Grief">Grief</button>
+    <button class="filter-pill" data-genre="Love">Love</button>
+    <button class="filter-pill" data-genre="Nostalgia">Nostalgia</button>
+    <button class="filter-pill" data-genre="Apology">Apology</button>
+    <button class="filter-pill" data-genre="Hope">Hope</button>
+    <button class="filter-pill" data-genre="Anger">Anger</button>
+    <button class="filter-pill" data-genre="Joy">Joy</button>
   </div>
 
+  <!-- SORT ROW -->
+  <div class="sort-row">
+    <span class="sort-label">Sort by</span>
+    <select class="sort-select" id="sort-select">
+      <option value="recent">Most recent</option>
+      <option value="loved">Most loved</option>
+      <option value="short">Shortest read</option>
+    </select>
+  </div>
+
+  <!-- CARD GRID -->
+  <div class="ds-grid" id="card-grid">
+    <!-- Cards injected by JS -->
+  </div>
+
+  <!-- AI STRIP -->
+  <div class="ai-strip">
+    <div class="ai-strip-left">
+      <div class="ai-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke="#f5f0e8">
+          <circle cx="12" cy="12" r="3"/>
+          <path d="M12 2v3M12 19v3M2 12h3M19 12h3"/>
+        </svg>
+      </div>
+      <div>
+        <div class="ai-text-head">Curated for your mood</div>
+        <div class="ai-text-sub">AI recommendations based on what you've been reading</div>
+      </div>
+    </div>
+    <button class="ai-btn" id="ai-btn">Try it</button>
+  </div>
+
+  <!-- PAGINATION -->
+  <div class="ds-pagination" id="pagination">
+    <button class="page-btn active">1</button>
+    <button class="page-btn">2</button>
+    <button class="page-btn">3</button>
+    <button class="page-btn">···</button>
+    <button class="page-btn">12</button>
+  </div>
+
+  <!-- MODAL -->
+  <div class="modal-overlay" id="modal-overlay">
+    <div class="modal" id="modal-box" role="dialog" aria-modal="true">
+      <button class="modal-close" id="modal-close" aria-label="Close">✕</button>
+      <div class="modal-genre" id="m-genre"></div>
+      <div class="modal-title" id="m-title"></div>
+      <div class="modal-body" id="m-body"></div>
+      <div class="modal-footer">
+        <div class="modal-meta" id="m-meta"></div>
+        <button class="action-btn" id="modal-like-btn">
+          <svg viewBox="0 0 24 24" width="14" height="14">
+            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+          </svg>
+          Save
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
 </body>
 </html>
