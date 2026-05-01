@@ -1,26 +1,166 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Write Letter</title>
-  <link rel="stylesheet" href="styles.css">
+<meta charset="UTF-8">
+<title>Write Letter — DearStranger</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display&family=IM+Fell+English&family=Lato&display=swap" rel="stylesheet">
+
+<style>
+body{
+  margin:0;
+  background:#3d0c0c;
+  font-family:'Lato',sans-serif;
+  color:#f5f0e8;
+}
+
+/* NAV */
+.ds-nav{
+  display:flex;
+  justify-content:space-between;
+  padding:1rem 2rem;
+}
+.ds-logo{
+  font-family:'Playfair Display';
+  font-size:1.3rem;
+}
+.ds-logo span{color:#c1606a;}
+
+/* CENTER */
+.container{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  min-height:100vh;
+  text-align:center;
+}
+
+/* HEADING */
+h1{
+  font-family:'Playfair Display';
+  font-size:2.5rem;
+}
+
+/* GRID */
+.grid{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:15px;
+  margin-top:30px;
+}
+
+.card{
+  padding:20px;
+  border:1px solid rgba(255,255,255,0.2);
+  border-radius:8px;
+  cursor:pointer;
+  transition:0.3s;
+}
+.card:hover{
+  border-color:#c1606a;
+  transform:translateY(-5px);
+}
+.selected{
+  background:#c1606a30;
+}
+
+/* FORM */
+.form-box{
+  display:none;
+  background:#ede0c4;
+  color:#2a1206;
+  padding:30px;
+  border-radius:10px;
+  width:500px;
+  margin-top:30px;
+}
+
+input, textarea, select{
+  width:100%;
+  padding:10px;
+  margin-bottom:15px;
+  border:none;
+  border-radius:5px;
+  font-family:'IM Fell English';
+}
+
+textarea{
+  height:150px;
+}
+
+/* BUTTON */
+button{
+  padding:10px 20px;
+  border:none;
+  background:#7a1c1c;
+  color:white;
+  border-radius:20px;
+  cursor:pointer;
+}
+button:hover{
+  background:#5e1515;
+}
+</style>
 </head>
+
 <body>
 
-  <h2>Write a Letter</h2>
+<nav class="ds-nav">
+  <div class="ds-logo">Dear<span>Stranger</span></div>
+</nav>
 
-  <form>
-    <input class="input" type="text" placeholder="Title"><br><br>
+<div class="container">
 
-    <textarea class="input" placeholder="Write your letter..."></textarea><br><br>
+  <!-- STEP 1 -->
+  <h1>What do you wish to <em>write?</em></h1>
 
-    <select class="input">
-      <option>Love</option>
-      <option>Life</option>
-      <option>Motivation</option>
-    </select><br><br>
+  <div class="grid" id="grid">
+    <div class="card" data="Love">🌹 Love</div>
+    <div class="card" data="Grief">🕯️ Grief</div>
+    <div class="card" data="Hope">🌅 Hope</div>
+    <div class="card" data="Nostalgia">🍂 Nostalgia</div>
+    <div class="card" data="Apology">🤍 Apology</div>
+    <div class="card" data="Anger">🔥 Anger</div>
+    <div class="card" data="Joy">✨ Joy</div>
+    <div class="card" data="Longing">🌙 Longing</div>
+  </div>
 
-    <button class="btn">Submit</button>
-  </form>
+  <!-- STEP 2 -->
+  <div class="form-box" id="formBox">
+    <h2>Write your letter</h2>
+
+    <form>
+      <input type="text" placeholder="Title">
+
+      <textarea placeholder="Dear Stranger..."></textarea>
+
+      <select id="genreSelect"></select>
+
+      <button type="submit">Seal the letter ✦</button>
+    </form>
+  </div>
+
+</div>
+
+<script>
+let selectedGenre = "";
+
+document.querySelectorAll(".card").forEach(card=>{
+  card.addEventListener("click", ()=>{
+    document.querySelectorAll(".card").forEach(c=>c.classList.remove("selected"));
+    card.classList.add("selected");
+
+    selectedGenre = card.getAttribute("data");
+
+    // show form
+    document.getElementById("formBox").style.display="block";
+
+    // auto select genre
+    document.getElementById("genreSelect").innerHTML = `<option>${selectedGenre}</option>`;
+  });
+});
+</script>
 
 </body>
 </html>
