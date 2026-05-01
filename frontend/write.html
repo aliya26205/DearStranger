@@ -1,166 +1,987 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Write Letter — DearStranger</title>
-
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display&family=IM+Fell+English&family=Lato&display=swap" rel="stylesheet">
-
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>DearStranger — Write a Letter</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;1,400;1,500&family=IM+Fell+English:ital@0;1&family=Lato:wght@300;400&display=swap" rel="stylesheet"/>
 <style>
-body{
-  margin:0;
-  background:#3d0c0c;
-  font-family:'Lato',sans-serif;
-  color:#f5f0e8;
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+
+:root{
+  --cherry:      #7a1c1c;
+  --cherry-deep: #5e1515;
+  --cherry-dark: #3d0c0c;
+  --rose:        #c1606a;
+  --rose-light:  #e8b4b8;
+  --cream:       #f5f0e8;
+  --parchment:   #ede0c4;
+  --parchment-dark: #d4bc94;
+  --parchment-edge: #c4a870;
+  --ink:         #2a1206;
+  --ink-mid:     #5a3820;
+  --gold:        #b8882a;
+  --gold-light:  #d4aa50;
+  --shadow:      rgba(30,10,5,0.35);
 }
 
-/* NAV */
+html,body{
+  width:100%;min-height:100vh;
+  background:var(--cherry-dark);
+  font-family:'Lato',sans-serif;
+  overflow-x:hidden;
+}
+
+/* ── PARTICLE BACKGROUND ── */
+#bg-canvas{
+  position:fixed;inset:0;
+  pointer-events:none;
+  z-index:0;
+  opacity:0.18;
+}
+
+/* ── NAV ── */
 .ds-nav{
-  display:flex;
-  justify-content:space-between;
+  position:fixed;top:0;left:0;right:0;
   padding:1rem 2rem;
+  display:flex;justify-content:space-between;align-items:center;
+  z-index:50;
+  background:linear-gradient(to bottom,rgba(61,12,12,0.95),transparent);
 }
 .ds-logo{
-  font-family:'Playfair Display';
-  font-size:1.3rem;
+  font-family:'Playfair Display',serif;
+  font-size:1.3rem;color:var(--cream);letter-spacing:0.03em;
+  text-decoration:none;
 }
-.ds-logo span{color:#c1606a;}
+.ds-logo span{color:var(--rose);font-style:italic;}
+.nav-back{
+  background:none;border:1px solid rgba(245,240,232,0.25);
+  color:var(--cream);padding:0.35rem 0.9rem;
+  border-radius:20px;font-size:0.75rem;letter-spacing:0.08em;
+  text-transform:uppercase;cursor:pointer;
+  font-family:'Lato',sans-serif;
+  transition:all 0.2s;
+}
+.nav-back:hover{background:rgba(245,240,232,0.1);}
 
-/* CENTER */
-.container{
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  justify-content:center;
+/* ════════════════════════════════
+   STAGE 1 — GENRE PICKER
+════════════════════════════════ */
+#stage-genre{
+  position:relative;z-index:10;
   min-height:100vh;
-  text-align:center;
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  padding:5rem 1.5rem 3rem;
+  transition:opacity 0.6s ease, transform 0.6s ease;
+}
+#stage-genre.exit{
+  opacity:0;transform:translateY(-30px);pointer-events:none;
 }
 
-/* HEADING */
-h1{
-  font-family:'Playfair Display';
-  font-size:2.5rem;
+.genre-eyebrow{
+  font-size:0.7rem;letter-spacing:0.22em;
+  text-transform:uppercase;color:var(--rose);
+  margin-bottom:1rem;
+  animation:fadeUp 0.7s ease both;
+}
+.genre-heading{
+  font-family:'Playfair Display',serif;
+  font-size:clamp(2rem,5vw,3.2rem);
+  font-weight:400;color:var(--cream);
+  text-align:center;line-height:1.2;
+  margin-bottom:0.6rem;
+  animation:fadeUp 0.7s 0.1s ease both;
+}
+.genre-heading em{color:var(--rose-light);font-style:italic;}
+.genre-sub{
+  font-size:0.88rem;color:rgba(245,240,232,0.5);
+  font-weight:300;margin-bottom:3rem;
+  animation:fadeUp 0.7s 0.2s ease both;
 }
 
-/* GRID */
-.grid{
+.genre-grid{
   display:grid;
-  grid-template-columns:repeat(4,1fr);
-  gap:15px;
-  margin-top:30px;
+  grid-template-columns:repeat(auto-fit,minmax(130px,1fr));
+  gap:0.75rem;
+  width:100%;max-width:680px;
+  animation:fadeUp 0.7s 0.3s ease both;
 }
 
-.card{
-  padding:20px;
-  border:1px solid rgba(255,255,255,0.2);
-  border-radius:8px;
+.genre-card{
+  background:rgba(245,240,232,0.05);
+  border:1px solid rgba(245,240,232,0.12);
+  border-radius:6px;
+  padding:1.2rem 0.8rem;
   cursor:pointer;
-  transition:0.3s;
+  text-align:center;
+  transition:all 0.25s ease;
+  position:relative;overflow:hidden;
 }
-.card:hover{
-  border-color:#c1606a;
-  transform:translateY(-5px);
+.genre-card::before{
+  content:'';position:absolute;inset:0;
+  background:var(--cherry);
+  opacity:0;transition:opacity 0.25s;
+  border-radius:inherit;
 }
-.selected{
-  background:#c1606a30;
+.genre-card:hover{
+  border-color:var(--rose);
+  transform:translateY(-3px);
+  box-shadow:0 12px 32px rgba(0,0,0,0.3);
+}
+.genre-card:hover::before{opacity:0.15;}
+.genre-card.selected{
+  border-color:var(--rose);
+  background:rgba(193,96,106,0.15);
+  transform:scale(1.04);
 }
 
-/* FORM */
-.form-box{
-  display:none;
-  background:#ede0c4;
-  color:#2a1206;
-  padding:30px;
-  border-radius:10px;
-  width:500px;
-  margin-top:30px;
+.genre-icon{
+  font-size:1.6rem;margin-bottom:0.5rem;
+  display:block;position:relative;z-index:1;
+}
+.genre-label{
+  font-family:'Playfair Display',serif;
+  font-size:0.88rem;color:var(--cream);
+  position:relative;z-index:1;letter-spacing:0.03em;
+}
+.genre-desc{
+  font-size:0.65rem;color:rgba(245,240,232,0.4);
+  margin-top:0.2rem;position:relative;z-index:1;
+  font-weight:300;
 }
 
-input, textarea, select{
+.genre-proceed{
+  margin-top:2.5rem;
+  background:var(--cherry);
+  color:var(--cream);
+  border:none;padding:0.7rem 2.2rem;
+  border-radius:30px;font-size:0.82rem;
+  letter-spacing:0.1em;text-transform:uppercase;
+  cursor:pointer;font-family:'Lato',sans-serif;
+  transition:all 0.25s;
+  opacity:0;pointer-events:none;
+  transform:translateY(8px);
+}
+.genre-proceed.visible{
+  opacity:1;pointer-events:all;
+  transform:translateY(0);
+  transition:opacity 0.3s ease, transform 0.3s ease, background 0.2s;
+}
+.genre-proceed:hover{background:var(--cherry-deep);}
+
+/* ════════════════════════════════
+   STAGE 2 — SCROLL WRITE
+════════════════════════════════ */
+#stage-scroll{
+  position:fixed;inset:0;
+  z-index:20;
+  display:flex;align-items:flex-start;justify-content:center;
+  pointer-events:none;
+  opacity:0;
+  overflow-y:auto;
+}
+#stage-scroll.active{
+  opacity:1;pointer-events:all;
+}
+
+/* Wax seal loading overlay */
+.seal-overlay{
+  position:fixed;inset:0;
+  background:var(--cherry-dark);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  z-index:5;
+  transition:opacity 0.5s ease;
+}
+.seal-overlay.gone{opacity:0;pointer-events:none;}
+
+.wax-seal{
+  width:90px;height:90px;
+  border-radius:50%;
+  background:var(--cherry);
+  border:3px solid var(--gold);
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Playfair Display',serif;
+  font-size:2rem;color:var(--gold-light);
+  box-shadow:0 0 0 6px rgba(184,136,42,0.2), 0 8px 32px rgba(0,0,0,0.5);
+  animation:sealPulse 1.2s ease-in-out infinite;
+}
+.seal-text{
+  margin-top:1.2rem;
+  font-size:0.75rem;letter-spacing:0.18em;
+  text-transform:uppercase;color:rgba(245,240,232,0.45);
+  font-family:'Lato',sans-serif;
+}
+
+/* THE SCROLL */
+.scroll-outer{
+  display:flex;flex-direction:column;align-items:center;
+  width:100%;padding:5.5rem 1rem 3rem;
+  position:relative;z-index:2;
+}
+
+.scroll-wrap{
+  position:relative;
+  width:min(640px,92vw);
+  display:flex;flex-direction:column;
+  align-items:center;
+  filter:drop-shadow(0 24px 48px rgba(0,0,0,0.55));
+  /* subtle float — gentler when writing */
+  animation:scrollFloatGentle 6s ease-in-out infinite;
+}
+
+/* Top roller */
+.scroll-roller{
   width:100%;
-  padding:10px;
-  margin-bottom:15px;
-  border:none;
-  border-radius:5px;
-  font-family:'IM Fell English';
+  height:38px;
+  background:linear-gradient(to bottom,
+    var(--parchment-edge) 0%,
+    var(--parchment-dark) 30%,
+    var(--parchment) 50%,
+    var(--parchment-dark) 70%,
+    var(--parchment-edge) 100%);
+  border-radius:19px;
+  position:relative;z-index:2;
+  box-shadow:0 4px 16px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.3);
+}
+.scroll-roller::before,.scroll-roller::after{
+  content:'';
+  position:absolute;top:50%;transform:translateY(-50%);
+  width:18px;height:18px;border-radius:50%;
+  background:var(--gold);
+  box-shadow:0 2px 8px rgba(0,0,0,0.4);
+}
+.scroll-roller::before{left:12px;}
+.scroll-roller::after{right:12px;}
+
+/* Main parchment body */
+.scroll-body{
+  width:calc(100% - 28px);
+  background:var(--parchment);
+  position:relative;z-index:1;
+  overflow:hidden;
+  max-height:0;
+  transition:max-height 1.1s cubic-bezier(0.22,1,0.36,1);
+  background-image:
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 28px,
+      rgba(180,140,80,0.06) 28px,
+      rgba(180,140,80,0.06) 29px
+    );
+}
+.scroll-body.unrolled{
+  max-height:1000px;
 }
 
-textarea{
-  height:150px;
+.scroll-content{
+  padding:2.2rem 2.4rem 1.8rem;
+  opacity:0;
+  transform:translateY(12px);
+  transition:opacity 0.5s 0.8s ease, transform 0.5s 0.8s ease;
+}
+.scroll-body.unrolled .scroll-content{
+  opacity:1;transform:translateY(0);
 }
 
-/* BUTTON */
-button{
-  padding:10px 20px;
+/* Aged edges */
+.scroll-body::before{
+  content:'';
+  position:absolute;inset:0;
+  background:
+    radial-gradient(ellipse at 0% 50%, rgba(140,90,30,0.12) 0%, transparent 50%),
+    radial-gradient(ellipse at 100% 50%, rgba(140,90,30,0.12) 0%, transparent 50%),
+    radial-gradient(ellipse at 50% 0%, rgba(140,90,30,0.08) 0%, transparent 40%),
+    radial-gradient(ellipse at 50% 100%, rgba(140,90,30,0.08) 0%, transparent 40%);
+  pointer-events:none;z-index:3;
+}
+
+/* Bottom roller */
+.scroll-roller-bottom{
+  width:100%;height:38px;
+  background:linear-gradient(to bottom,
+    var(--parchment-edge) 0%,
+    var(--parchment-dark) 30%,
+    var(--parchment) 50%,
+    var(--parchment-dark) 70%,
+    var(--parchment-edge) 100%);
+  border-radius:19px;
+  position:relative;z-index:2;
+  box-shadow:0 4px 16px rgba(0,0,0,0.4), inset 0 -1px 0 rgba(255,255,255,0.3);
+}
+.scroll-roller-bottom::before,.scroll-roller-bottom::after{
+  content:'';
+  position:absolute;top:50%;transform:translateY(-50%);
+  width:18px;height:18px;border-radius:50%;
+  background:var(--gold);
+  box-shadow:0 2px 8px rgba(0,0,0,0.4);
+}
+.scroll-roller-bottom::before{left:12px;}
+.scroll-roller-bottom::after{right:12px;}
+
+/* ════════════════════════════════
+   LETTER WRITING FORM
+════════════════════════════════ */
+.letter-genre-tag{
+  font-size:0.62rem;letter-spacing:0.16em;text-transform:uppercase;
+  color:var(--cherry);margin-bottom:0.9rem;
+  display:flex;align-items:center;gap:0.5rem;
+}
+.letter-genre-tag::before,.letter-genre-tag::after{
+  content:'';flex:1;height:1px;background:var(--parchment-edge);opacity:0.5;
+}
+
+.letter-salutation{
+  font-family:'IM Fell English',serif;
+  font-size:1.05rem;color:var(--ink-mid);
+  margin-bottom:0.6rem;font-style:italic;
+}
+
+/* Title input */
+.letter-title-input{
+  font-family:'Playfair Display',serif;
+  font-size:1.3rem;font-weight:500;
+  color:var(--ink);line-height:1.3;
+  width:100%;
+  background:transparent;
   border:none;
-  background:#7a1c1c;
-  color:white;
-  border-radius:20px;
+  border-bottom:1.5px solid var(--parchment-edge);
+  outline:none;
+  padding:0.1rem 0;
+  margin-bottom:1.2rem;
+  transition:border-color 0.2s;
+  caret-color:var(--cherry);
+}
+.letter-title-input::placeholder{
+  color:rgba(90,56,32,0.3);
+  font-style:italic;
+}
+.letter-title-input:focus{
+  border-bottom-color:var(--cherry);
+}
+
+.letter-divider{
+  width:100%;height:1px;
+  background:linear-gradient(to right,transparent,var(--parchment-edge),transparent);
+  margin-bottom:1.2rem;
+}
+
+/* Body textarea */
+.letter-body-textarea{
+  font-family:'IM Fell English',serif;
+  font-size:0.97rem;color:var(--ink-mid);
+  line-height:1.9;
+  width:100%;
+  min-height:200px;
+  background:transparent;
+  border:none;
+  outline:none;
+  resize:none;
+  padding:0;
+  transition:none;
+  caret-color:var(--cherry);
+  /* Lined paper effect via background */
+  background-image:
+    repeating-linear-gradient(
+      transparent,
+      transparent calc(1.9em - 1px),
+      rgba(196,168,112,0.22) calc(1.9em - 1px),
+      rgba(196,168,112,0.22) 1.9em
+    );
+  background-attachment:local;
+}
+.letter-body-textarea::placeholder{
+  color:rgba(90,56,32,0.3);
+  font-style:italic;
+}
+.letter-body-textarea:focus{
+  outline:none;
+}
+
+/* Character counter */
+.char-counter{
+  text-align:right;
+  font-size:0.65rem;
+  color:rgba(90,56,32,0.35);
+  letter-spacing:0.06em;
+  margin-top:0.4rem;
+  font-family:'Lato',sans-serif;
+  transition:color 0.2s;
+}
+.char-counter.warn{color:var(--cherry);}
+
+.letter-closing-section{
+  margin-top:1.6rem;
+  padding-top:1rem;
+  border-top:1px solid rgba(196,168,112,0.3);
+}
+
+.letter-closing-label{
+  font-family:'IM Fell English',serif;
+  font-size:0.85rem;color:var(--ink-mid);
+  font-style:italic;
+  display:block;
+  margin-bottom:0.3rem;
+}
+
+.letter-signoff-static{
+  font-family:'Playfair Display',serif;
+  font-size:1.05rem;color:var(--cherry);
+  font-style:italic;
+}
+
+/* Wax seal submit button */
+.submit-area{
+  display:flex;flex-direction:column;align-items:center;
+  margin-top:2rem;
+  gap:0.8rem;
+  opacity:0;
+  transform:translateY(10px);
+  transition:opacity 0.4s 1.3s ease, transform 0.4s 1.3s ease;
+}
+.submit-area.show{
+  opacity:1;transform:translateY(0);
+}
+
+.submit-hint{
+  font-size:0.68rem;letter-spacing:0.14em;text-transform:uppercase;
+  color:rgba(245,240,232,0.35);font-family:'Lato',sans-serif;
+}
+
+.btn-seal-submit{
+  width:80px;height:80px;
+  border-radius:50%;
+  background:var(--cherry);
+  border:3px solid var(--gold);
+  color:var(--gold-light);
+  font-family:'Playfair Display',serif;
+  font-size:1.6rem;
+  display:flex;align-items:center;justify-content:center;
   cursor:pointer;
+  box-shadow:0 0 0 6px rgba(184,136,42,0.15), 0 8px 28px rgba(0,0,0,0.4);
+  transition:all 0.25s ease;
+  position:relative;
+  overflow:hidden;
 }
-button:hover{
-  background:#5e1515;
+.btn-seal-submit::before{
+  content:'';
+  position:absolute;inset:0;border-radius:50%;
+  background:var(--cherry-deep);
+  opacity:0;
+  transition:opacity 0.2s;
+}
+.btn-seal-submit:hover{
+  transform:scale(1.08);
+  box-shadow:0 0 0 10px rgba(184,136,42,0.1), 0 12px 36px rgba(0,0,0,0.5);
+}
+.btn-seal-submit:hover::before{opacity:1;}
+.btn-seal-submit span{position:relative;z-index:1;}
+
+.btn-discard{
+  background:none;border:none;
+  color:rgba(245,240,232,0.3);
+  font-size:0.7rem;letter-spacing:0.1em;text-transform:uppercase;
+  cursor:pointer;font-family:'Lato',sans-serif;
+  transition:color 0.2s;
+  padding:0.3rem;
+}
+.btn-discard:hover{color:rgba(245,240,232,0.6);}
+
+/* ════════════════════════════════
+   SUCCESS STAGE
+════════════════════════════════ */
+#stage-success{
+  position:fixed;inset:0;
+  z-index:30;
+  background:var(--cherry-dark);
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  padding:2rem;
+  opacity:0;pointer-events:none;
+  transition:opacity 0.7s ease;
+}
+#stage-success.active{
+  opacity:1;pointer-events:all;
+}
+
+.success-seal{
+  width:100px;height:100px;
+  border-radius:50%;
+  background:var(--cherry);
+  border:3px solid var(--gold);
+  display:flex;align-items:center;justify-content:center;
+  font-size:2.2rem;color:var(--gold-light);
+  box-shadow:0 0 0 8px rgba(184,136,42,0.18), 0 16px 48px rgba(0,0,0,0.5);
+  margin-bottom:2rem;
+  animation:successAppear 0.7s cubic-bezier(0.175,0.885,0.32,1.275) both;
+}
+
+.success-heading{
+  font-family:'Playfair Display',serif;
+  font-size:clamp(1.5rem,4vw,2.4rem);
+  font-weight:400;color:var(--cream);
+  text-align:center;
+  margin-bottom:0.6rem;
+  animation:fadeUp 0.6s 0.2s ease both;
+}
+.success-heading em{color:var(--rose-light);font-style:italic;}
+
+.success-sub{
+  font-size:0.88rem;color:rgba(245,240,232,0.45);
+  font-weight:300;text-align:center;
+  max-width:360px;line-height:1.7;
+  margin-bottom:2.8rem;
+  animation:fadeUp 0.6s 0.35s ease both;
+}
+
+.success-actions{
+  display:flex;gap:1rem;flex-wrap:wrap;justify-content:center;
+  animation:fadeUp 0.6s 0.5s ease both;
+}
+
+.btn-write-another{
+  background:var(--cherry);
+  border:none;
+  color:var(--cream);
+  padding:0.55rem 1.5rem;border-radius:30px;
+  font-size:0.78rem;letter-spacing:0.08em;text-transform:uppercase;
+  cursor:pointer;font-family:'Lato',sans-serif;
+  transition:background 0.2s;
+}
+.btn-write-another:hover{background:var(--cherry-deep);}
+
+.btn-go-read{
+  background:rgba(245,240,232,0.08);
+  border:1px solid rgba(245,240,232,0.2);
+  color:var(--cream);
+  padding:0.55rem 1.5rem;border-radius:30px;
+  font-size:0.78rem;letter-spacing:0.08em;text-transform:uppercase;
+  cursor:pointer;font-family:'Lato',sans-serif;
+  transition:background 0.2s;
+}
+.btn-go-read:hover{background:rgba(245,240,232,0.15);}
+
+/* ── Ink drip cursor trail ── */
+.ink-drop{
+  position:fixed;
+  width:5px;height:5px;
+  border-radius:50%;
+  background:rgba(122,28,28,0.55);
+  pointer-events:none;
+  z-index:100;
+  transform:translate(-50%,-50%);
+  animation:inkFade 0.8s ease forwards;
+}
+@keyframes inkFade{
+  0%{opacity:0.6;transform:translate(-50%,-50%) scale(1);}
+  100%{opacity:0;transform:translate(-50%,10px) scale(0.3);}
+}
+
+/* ── KEYFRAMES ── */
+@keyframes fadeUp{
+  from{opacity:0;transform:translateY(18px);}
+  to{opacity:1;transform:translateY(0);}
+}
+@keyframes sealPulse{
+  0%,100%{box-shadow:0 0 0 6px rgba(184,136,42,0.2),0 8px 32px rgba(0,0,0,0.5);}
+  50%{box-shadow:0 0 0 12px rgba(184,136,42,0.08),0 8px 32px rgba(0,0,0,0.5);}
+}
+@keyframes scrollFloatGentle{
+  0%,100%{transform:translateY(0px) rotate(-0.1deg);}
+  50%{transform:translateY(-5px) rotate(0.1deg);}
+}
+@keyframes successAppear{
+  from{opacity:0;transform:scale(0.5) rotate(-15deg);}
+  to{opacity:1;transform:scale(1) rotate(0deg);}
+}
+
+/* ── RESPONSIVE ── */
+@media(max-width:600px){
+  .scroll-content{padding:1.5rem 1.4rem 1.2rem;}
+  .letter-title-input{font-size:1.1rem;}
+  .genre-grid{grid-template-columns:repeat(2,1fr);}
 }
 </style>
 </head>
-
 <body>
 
+<canvas id="bg-canvas"></canvas>
+
 <nav class="ds-nav">
-  <div class="ds-logo">Dear<span>Stranger</span></div>
+  <a class="ds-logo" href="index.html">Dear<span>Stranger</span></a>
+  <button class="nav-back" onclick="history.back()">← Back</button>
 </nav>
 
-<div class="container">
+<!-- ══════════════ STAGE 1: GENRE ══════════════ -->
+<section id="stage-genre">
+  <p class="genre-eyebrow">Leave a trace behind</p>
+  <h1 class="genre-heading">What do you need to<br><em>release today?</em></h1>
+  <p class="genre-sub">Your words will find a stranger who needs them.</p>
 
-  <!-- STEP 1 -->
-  <h1>What do you wish to <em>write?</em></h1>
-
-  <div class="grid" id="grid">
-    <div class="card" data="Love">🌹 Love</div>
-    <div class="card" data="Grief">🕯️ Grief</div>
-    <div class="card" data="Hope">🌅 Hope</div>
-    <div class="card" data="Nostalgia">🍂 Nostalgia</div>
-    <div class="card" data="Apology">🤍 Apology</div>
-    <div class="card" data="Anger">🔥 Anger</div>
-    <div class="card" data="Joy">✨ Joy</div>
-    <div class="card" data="Longing">🌙 Longing</div>
+  <div class="genre-grid" id="genre-grid">
+    <div class="genre-card" data-genre="Love">
+      <span class="genre-icon">🌹</span>
+      <div class="genre-label">Love</div>
+      <div class="genre-desc">tender & aching</div>
+    </div>
+    <div class="genre-card" data-genre="Grief">
+      <span class="genre-icon">🕯️</span>
+      <div class="genre-label">Grief</div>
+      <div class="genre-desc">quiet & heavy</div>
+    </div>
+    <div class="genre-card" data-genre="Hope">
+      <span class="genre-icon">🌅</span>
+      <div class="genre-label">Hope</div>
+      <div class="genre-desc">fragile & bright</div>
+    </div>
+    <div class="genre-card" data-genre="Nostalgia">
+      <span class="genre-icon">🍂</span>
+      <div class="genre-label">Nostalgia</div>
+      <div class="genre-desc">warm & distant</div>
+    </div>
+    <div class="genre-card" data-genre="Apology">
+      <span class="genre-icon">🤍</span>
+      <div class="genre-label">Apology</div>
+      <div class="genre-desc">raw & honest</div>
+    </div>
+    <div class="genre-card" data-genre="Anger">
+      <span class="genre-icon">🔥</span>
+      <div class="genre-label">Anger</div>
+      <div class="genre-desc">sharp & real</div>
+    </div>
+    <div class="genre-card" data-genre="Joy">
+      <span class="genre-icon">✨</span>
+      <div class="genre-label">Joy</div>
+      <div class="genre-desc">light & free</div>
+    </div>
+    <div class="genre-card" data-genre="Longing">
+      <span class="genre-icon">🌙</span>
+      <div class="genre-label">Longing</div>
+      <div class="genre-desc">soft & restless</div>
+    </div>
   </div>
 
-  <!-- STEP 2 -->
-  <div class="form-box" id="formBox">
-    <h2>Write your letter</h2>
+  <button class="genre-proceed" id="proceed-btn">
+    Take up the quill &nbsp;✦
+  </button>
+</section>
 
-    <form>
-      <input type="text" placeholder="Title">
+<!-- ══════════════ STAGE 2: SCROLL WRITE ══════════════ -->
+<section id="stage-scroll">
 
-      <textarea placeholder="Dear Stranger..."></textarea>
-
-      <select id="genreSelect"></select>
-
-      <button type="submit">Seal the letter ✦</button>
-    </form>
+  <!-- Wax seal loading moment -->
+  <div class="seal-overlay" id="seal-overlay">
+    <div class="wax-seal">✦</div>
+    <div class="seal-text">Preparing the parchment...</div>
   </div>
 
-</div>
+  <!-- The scroll -->
+  <div class="scroll-outer">
+    <div class="scroll-wrap" id="scroll-wrap">
+      <!-- Top roller -->
+      <div class="scroll-roller"></div>
+
+      <!-- Parchment body -->
+      <div class="scroll-body" id="scroll-body">
+        <div class="scroll-content" id="scroll-content">
+
+          <!-- Genre tag -->
+          <div class="letter-genre-tag" id="form-genre-tag">Love</div>
+
+          <!-- Salutation -->
+          <div class="letter-salutation">Dear Stranger,</div>
+
+          <!-- Title input -->
+          <input
+            class="letter-title-input"
+            id="letter-title"
+            type="text"
+            placeholder="Give your letter a title..."
+            maxlength="120"
+            autocomplete="off"
+            spellcheck="true"
+          />
+
+          <div class="letter-divider"></div>
+
+          <!-- Body textarea -->
+          <textarea
+            class="letter-body-textarea"
+            id="letter-body"
+            placeholder="Begin here. Write what you could never say aloud. This letter will find whoever needs it..."
+            maxlength="1200"
+            rows="10"
+            spellcheck="true"
+          ></textarea>
+          <div class="char-counter" id="char-counter">0 / 1200</div>
+
+          <!-- Closing section -->
+          <div class="letter-closing-section">
+            <span class="letter-closing-label">With whatever you carry,</span>
+            <div class="letter-signoff-static">— A Stranger</div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Bottom roller -->
+      <div class="scroll-roller-bottom"></div>
+    </div>
+
+    <!-- Submit area below scroll -->
+    <div class="submit-area" id="submit-area">
+      <div class="submit-hint">Seal &amp; send into the world</div>
+      <button class="btn-seal-submit" id="btn-submit" title="Send this letter">
+        <span>✦</span>
+      </button>
+      <button class="btn-discard" id="btn-discard">Discard letter</button>
+    </div>
+  </div>
+
+</section>
+
+<!-- ══════════════ STAGE 3: SUCCESS ══════════════ -->
+<section id="stage-success">
+  <div class="success-seal">✦</div>
+  <h2 class="success-heading">Your letter has been<br><em>sealed & sent.</em></h2>
+  <p class="success-sub">Somewhere, a stranger will open this. Your words will find the person who needs them most.</p>
+  <div class="success-actions">
+    <button class="btn-write-another" id="btn-write-another">Write another ✦</button>
+    <button class="btn-go-read" onclick="window.location.href='read.html'">Read a letter</button>
+  </div>
+</section>
 
 <script>
-let selectedGenre = "";
+// ── PARTICLE CANVAS ──────────────────────────────────────
+(function initParticles() {
+  const canvas = document.getElementById('bg-canvas');
+  const ctx = canvas.getContext('2d');
+  let W, H, particles = [];
 
-document.querySelectorAll(".card").forEach(card=>{
-  card.addEventListener("click", ()=>{
-    document.querySelectorAll(".card").forEach(c=>c.classList.remove("selected"));
-    card.classList.add("selected");
+  function resize() {
+    W = canvas.width = window.innerWidth;
+    H = canvas.height = window.innerHeight;
+  }
 
-    selectedGenre = card.getAttribute("data");
+  function Particle() {
+    this.x = Math.random() * W;
+    this.y = Math.random() * H;
+    this.r = Math.random() * 1.2 + 0.3;
+    this.speed = Math.random() * 0.3 + 0.1;
+    this.drift = (Math.random() - 0.5) * 0.3;
+    this.alpha = Math.random() * 0.5 + 0.1;
+  }
 
-    // show form
-    document.getElementById("formBox").style.display="block";
+  Particle.prototype.update = function() {
+    this.y -= this.speed;
+    this.x += this.drift;
+    if (this.y < -5) { this.y = H + 5; this.x = Math.random() * W; }
+  };
 
-    // auto select genre
-    document.getElementById("genreSelect").innerHTML = `<option>${selectedGenre}</option>`;
+  function init() {
+    resize();
+    particles = Array.from({length: 60}, () => new Particle());
+  }
+
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+    particles.forEach(p => {
+      p.update();
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(193,96,106,${p.alpha})`;
+      ctx.fill();
+    });
+    requestAnimationFrame(draw);
+  }
+
+  window.addEventListener('resize', resize);
+  init(); draw();
+})();
+
+// ── INK CURSOR TRAIL ─────────────────────────────────────
+(function initInkTrail() {
+  let lastDrop = 0;
+  document.addEventListener('mousemove', (e) => {
+    const now = Date.now();
+    if (now - lastDrop < 80) return;
+    lastDrop = now;
+    const drop = document.createElement('div');
+    drop.className = 'ink-drop';
+    drop.style.left = e.clientX + 'px';
+    drop.style.top = e.clientY + 'px';
+    document.body.appendChild(drop);
+    setTimeout(() => drop.remove(), 800);
+  });
+})();
+
+// ── STATE ────────────────────────────────────────────────
+let selectedGenre = null;
+
+// ── GENRE SELECTION ──────────────────────────────────────
+document.querySelectorAll('.genre-card').forEach(card => {
+  card.addEventListener('click', () => {
+    document.querySelectorAll('.genre-card').forEach(c => c.classList.remove('selected'));
+    card.classList.add('selected');
+    selectedGenre = card.dataset.genre;
+    const btn = document.getElementById('proceed-btn');
+    btn.classList.add('visible');
   });
 });
-</script>
 
+// ── PROCEED → SHOW SCROLL ────────────────────────────────
+document.getElementById('proceed-btn').addEventListener('click', () => {
+  if (!selectedGenre) return;
+
+  // Exit genre stage
+  document.getElementById('stage-genre').classList.add('exit');
+
+  // Show scroll stage with seal overlay
+  const scrollStage = document.getElementById('stage-scroll');
+  scrollStage.classList.add('active');
+
+  // Update genre tag inside form
+  document.getElementById('form-genre-tag').textContent = selectedGenre;
+
+  // After 1.6s: hide seal, unroll scroll
+  setTimeout(() => {
+    document.getElementById('seal-overlay').classList.add('gone');
+
+    setTimeout(() => {
+      document.getElementById('scroll-body').classList.add('unrolled');
+
+      setTimeout(() => {
+        document.getElementById('submit-area').classList.add('show');
+        // Focus title
+        setTimeout(() => {
+          document.getElementById('letter-title').focus();
+        }, 200);
+      }, 900);
+    }, 200);
+  }, 1600);
+});
+
+// ── CHARACTER COUNTER ────────────────────────────────────
+document.getElementById('letter-body').addEventListener('input', function() {
+  const len = this.value.length;
+  const counter = document.getElementById('char-counter');
+  counter.textContent = len + ' / 1200';
+  counter.classList.toggle('warn', len > 1050);
+
+  // Auto-grow
+  this.style.height = 'auto';
+  this.style.height = this.scrollHeight + 'px';
+});
+
+// ── SUBMIT ───────────────────────────────────────────────
+document.getElementById('btn-submit').addEventListener('click', () => {
+  const title = document.getElementById('letter-title').value.trim();
+  const body  = document.getElementById('letter-body').value.trim();
+
+  if (!title && !body) {
+    // Gentle shake to prompt writing
+    const wrap = document.getElementById('scroll-body');
+    wrap.style.animation = 'none';
+    wrap.style.transition = 'transform 0.08s ease';
+    let shakes = 0;
+    const dirs = [-6, 6, -4, 4, -2, 2, 0];
+    const shake = () => {
+      if (shakes >= dirs.length) { wrap.style.transform = ''; return; }
+      wrap.style.transform = `translateX(${dirs[shakes]}px)`;
+      shakes++;
+      setTimeout(shake, 60);
+    };
+    shake();
+    // Hint
+    document.getElementById('letter-title').focus();
+    return;
+  }
+
+  // Seal animation on button
+  const btn = document.getElementById('btn-submit');
+  btn.style.transform = 'scale(0.9)';
+  btn.style.transition = 'transform 0.15s ease';
+  setTimeout(() => {
+    btn.style.transform = 'scale(1.15)';
+    setTimeout(() => {
+      btn.style.transform = '';
+
+      // Roll up scroll
+      document.getElementById('scroll-body').classList.remove('unrolled');
+      document.getElementById('submit-area').classList.remove('show');
+
+      setTimeout(() => {
+        // Show success stage
+        document.getElementById('stage-scroll').style.opacity = '0';
+        document.getElementById('stage-scroll').style.pointerEvents = 'none';
+        document.getElementById('stage-success').classList.add('active');
+      }, 900);
+    }, 120);
+  }, 120);
+});
+
+// ── DISCARD ──────────────────────────────────────────────
+document.getElementById('btn-discard').addEventListener('click', () => {
+  if (!confirm('Discard this letter and start over?')) return;
+
+  document.getElementById('letter-title').value = '';
+  document.getElementById('letter-body').value = '';
+  document.getElementById('char-counter').textContent = '0 / 1200';
+
+  // Roll up, go back to genre
+  document.getElementById('scroll-body').classList.remove('unrolled');
+  document.getElementById('submit-area').classList.remove('show');
+
+  setTimeout(() => {
+    document.getElementById('stage-scroll').classList.remove('active');
+    document.getElementById('stage-scroll').style.opacity = '';
+    document.getElementById('stage-scroll').style.pointerEvents = '';
+    document.getElementById('seal-overlay').classList.remove('gone');
+
+    const genreStage = document.getElementById('stage-genre');
+    genreStage.classList.remove('exit');
+    genreStage.style.animation = 'none';
+    void genreStage.offsetWidth;
+    genreStage.style.animation = '';
+
+    // Deselect cards
+    document.querySelectorAll('.genre-card').forEach(c => c.classList.remove('selected'));
+    document.getElementById('proceed-btn').classList.remove('visible');
+    selectedGenre = null;
+  }, 800);
+});
+
+// ── WRITE ANOTHER ─────────────────────────────────────────
+document.getElementById('btn-write-another').addEventListener('click', () => {
+  // Reset success
+  document.getElementById('stage-success').classList.remove('active');
+
+  // Reset form
+  document.getElementById('letter-title').value = '';
+  document.getElementById('letter-body').value = '';
+  document.getElementById('char-counter').textContent = '0 / 1200';
+
+  // Reset scroll stage display
+  document.getElementById('stage-scroll').style.opacity = '';
+  document.getElementById('stage-scroll').style.pointerEvents = '';
+  document.getElementById('stage-scroll').classList.remove('active');
+  document.getElementById('seal-overlay').classList.remove('gone');
+  document.getElementById('scroll-body').classList.remove('unrolled');
+  document.getElementById('submit-area').classList.remove('show');
+
+  // Reset genre stage
+  const genreStage = document.getElementById('stage-genre');
+  genreStage.classList.remove('exit');
+  genreStage.style.opacity = '1';
+  genreStage.style.transform = '';
+
+  document.querySelectorAll('.genre-card').forEach(c => c.classList.remove('selected'));
+  document.getElementById('proceed-btn').classList.remove('visible');
+  selectedGenre = null;
+});
+</script>
 </body>
 </html>
