@@ -1,106 +1,810 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>DearStranger — Read Letters</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;1,400&family=Lato:wght@300;400&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css" />
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>DearStranger — Read a Letter</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;1,400;1,500&family=IM+Fell+English:ital@0;1&family=Lato:wght@300;400&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+
+:root{
+  --cherry:      #7a1c1c;
+  --cherry-deep: #5e1515;
+  --cherry-dark: #3d0c0c;
+  --rose:        #c1606a;
+  --rose-light:  #e8b4b8;
+  --cream:       #f5f0e8;
+  --parchment:   #ede0c4;
+  --parchment-dark: #d4bc94;
+  --parchment-edge: #c4a870;
+  --ink:         #2a1206;
+  --ink-mid:     #5a3820;
+  --gold:        #b8882a;
+  --gold-light:  #d4aa50;
+  --shadow:      rgba(30,10,5,0.35);
+}
+
+html,body{
+  width:100%;min-height:100vh;
+  background:var(--cherry-dark);
+  font-family:'Lato',sans-serif;
+  overflow-x:hidden;
+}
+
+/* ── PARTICLE BACKGROUND ── */
+#bg-canvas{
+  position:fixed;inset:0;
+  pointer-events:none;
+  z-index:0;
+  opacity:0.18;
+}
+
+/* ── NAV ── */
+.ds-nav{
+  position:fixed;top:0;left:0;right:0;
+  padding:1rem 2rem;
+  display:flex;justify-content:space-between;align-items:center;
+  z-index:50;
+  background:linear-gradient(to bottom,rgba(61,12,12,0.95),transparent);
+}
+.ds-logo{
+  font-family:'Playfair Display',serif;
+  font-size:1.3rem;color:var(--cream);letter-spacing:0.03em;
+  text-decoration:none;
+}
+.ds-logo span{color:var(--rose);font-style:italic;}
+.nav-back{
+  background:none;border:1px solid rgba(245,240,232,0.25);
+  color:var(--cream);padding:0.35rem 0.9rem;
+  border-radius:20px;font-size:0.75rem;letter-spacing:0.08em;
+  text-transform:uppercase;cursor:pointer;
+  font-family:'Lato',sans-serif;
+  transition:all 0.2s;
+}
+.nav-back:hover{background:rgba(245,240,232,0.1);}
+
+/* ════════════════════════════════
+   STAGE 1 — GENRE PICKER
+════════════════════════════════ */
+#stage-genre{
+  position:relative;z-index:10;
+  min-height:100vh;
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  padding:5rem 1.5rem 3rem;
+  transition:opacity 0.6s ease, transform 0.6s ease;
+}
+#stage-genre.exit{
+  opacity:0;transform:translateY(-30px);pointer-events:none;
+}
+
+.genre-eyebrow{
+  font-size:0.7rem;letter-spacing:0.22em;
+  text-transform:uppercase;color:var(--rose);
+  margin-bottom:1rem;
+  animation:fadeUp 0.7s ease both;
+}
+.genre-heading{
+  font-family:'Playfair Display',serif;
+  font-size:clamp(2rem,5vw,3.2rem);
+  font-weight:400;color:var(--cream);
+  text-align:center;line-height:1.2;
+  margin-bottom:0.6rem;
+  animation:fadeUp 0.7s 0.1s ease both;
+}
+.genre-heading em{color:var(--rose-light);font-style:italic;}
+.genre-sub{
+  font-size:0.88rem;color:rgba(245,240,232,0.5);
+  font-weight:300;margin-bottom:3rem;
+  animation:fadeUp 0.7s 0.2s ease both;
+}
+
+.genre-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(130px,1fr));
+  gap:0.75rem;
+  width:100%;max-width:680px;
+  animation:fadeUp 0.7s 0.3s ease both;
+}
+
+.genre-card{
+  background:rgba(245,240,232,0.05);
+  border:1px solid rgba(245,240,232,0.12);
+  border-radius:6px;
+  padding:1.2rem 0.8rem;
+  cursor:pointer;
+  text-align:center;
+  transition:all 0.25s ease;
+  position:relative;overflow:hidden;
+}
+.genre-card::before{
+  content:'';position:absolute;inset:0;
+  background:var(--cherry);
+  opacity:0;transition:opacity 0.25s;
+  border-radius:inherit;
+}
+.genre-card:hover{
+  border-color:var(--rose);
+  transform:translateY(-3px);
+  box-shadow:0 12px 32px rgba(0,0,0,0.3);
+}
+.genre-card:hover::before{opacity:0.15;}
+.genre-card.selected{
+  border-color:var(--rose);
+  background:rgba(193,96,106,0.15);
+  transform:scale(1.04);
+}
+
+.genre-icon{
+  font-size:1.6rem;margin-bottom:0.5rem;
+  display:block;position:relative;z-index:1;
+}
+.genre-label{
+  font-family:'Playfair Display',serif;
+  font-size:0.88rem;color:var(--cream);
+  position:relative;z-index:1;letter-spacing:0.03em;
+}
+.genre-desc{
+  font-size:0.65rem;color:rgba(245,240,232,0.4);
+  margin-top:0.2rem;position:relative;z-index:1;
+  font-weight:300;
+}
+
+.genre-proceed{
+  margin-top:2.5rem;
+  background:var(--cherry);
+  color:var(--cream);
+  border:none;padding:0.7rem 2.2rem;
+  border-radius:30px;font-size:0.82rem;
+  letter-spacing:0.1em;text-transform:uppercase;
+  cursor:pointer;font-family:'Lato',sans-serif;
+  transition:all 0.25s;
+  opacity:0;pointer-events:none;
+  transform:translateY(8px);
+  animation:none;
+}
+.genre-proceed.visible{
+  opacity:1;pointer-events:all;
+  transform:translateY(0);
+  transition:opacity 0.3s ease, transform 0.3s ease, background 0.2s;
+}
+.genre-proceed:hover{background:var(--cherry-deep);}
+
+/* ════════════════════════════════
+   STAGE 2 — SCROLL REVEAL
+════════════════════════════════ */
+#stage-scroll{
+  position:fixed;inset:0;
+  z-index:20;
+  display:flex;align-items:center;justify-content:center;
+  pointer-events:none;
+  opacity:0;
+}
+#stage-scroll.active{
+  opacity:1;pointer-events:all;
+}
+
+/* Wax seal loading overlay */
+.seal-overlay{
+  position:absolute;inset:0;
+  background:var(--cherry-dark);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  z-index:5;
+  transition:opacity 0.5s ease;
+}
+.seal-overlay.gone{opacity:0;pointer-events:none;}
+
+.wax-seal{
+  width:90px;height:90px;
+  border-radius:50%;
+  background:var(--cherry);
+  border:3px solid var(--gold);
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Playfair Display',serif;
+  font-size:2rem;color:var(--gold-light);
+  box-shadow:0 0 0 6px rgba(184,136,42,0.2), 0 8px 32px rgba(0,0,0,0.5);
+  animation:sealPulse 1.2s ease-in-out infinite;
+}
+.seal-text{
+  margin-top:1.2rem;
+  font-size:0.75rem;letter-spacing:0.18em;
+  text-transform:uppercase;color:rgba(245,240,232,0.45);
+  font-family:'Lato',sans-serif;
+}
+
+/* THE SCROLL */
+.scroll-wrap{
+  position:relative;z-index:2;
+  width:min(640px,92vw);
+  display:flex;flex-direction:column;
+  align-items:center;
+  /* hover float */
+  animation:scrollFloat 4s ease-in-out infinite;
+  filter:drop-shadow(0 24px 48px rgba(0,0,0,0.55));
+}
+
+/* Top roller */
+.scroll-roller{
+  width:100%;
+  height:38px;
+  background:linear-gradient(to bottom,
+    var(--parchment-edge) 0%,
+    var(--parchment-dark) 30%,
+    var(--parchment) 50%,
+    var(--parchment-dark) 70%,
+    var(--parchment-edge) 100%);
+  border-radius:19px;
+  position:relative;z-index:2;
+  box-shadow:0 4px 16px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.3);
+}
+.scroll-roller::before,.scroll-roller::after{
+  content:'';
+  position:absolute;top:50%;transform:translateY(-50%);
+  width:18px;height:18px;border-radius:50%;
+  background:var(--gold);
+  box-shadow:0 2px 8px rgba(0,0,0,0.4);
+}
+.scroll-roller::before{left:12px;}
+.scroll-roller::after{right:12px;}
+
+/* Main parchment body */
+.scroll-body{
+  width:calc(100% - 28px);
+  background:var(--parchment);
+  position:relative;z-index:1;
+  overflow:hidden;
+  /* Unroll animation */
+  max-height:0;
+  transition:max-height 1.1s cubic-bezier(0.22,1,0.36,1);
+  /* Parchment texture via repeating pattern */
+  background-image:
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 28px,
+      rgba(180,140,80,0.06) 28px,
+      rgba(180,140,80,0.06) 29px
+    );
+}
+.scroll-body.unrolled{
+  max-height:600px;
+}
+
+.scroll-content{
+  padding:2.2rem 2.4rem 1.8rem;
+  opacity:0;
+  transform:translateY(12px);
+  transition:opacity 0.5s 0.8s ease, transform 0.5s 0.8s ease;
+}
+.scroll-body.unrolled .scroll-content{
+  opacity:1;transform:translateY(0);
+}
+
+/* Aged edges on parchment */
+.scroll-body::before{
+  content:'';
+  position:absolute;inset:0;
+  background:
+    radial-gradient(ellipse at 0% 50%, rgba(140,90,30,0.12) 0%, transparent 50%),
+    radial-gradient(ellipse at 100% 50%, rgba(140,90,30,0.12) 0%, transparent 50%),
+    radial-gradient(ellipse at 50% 0%, rgba(140,90,30,0.08) 0%, transparent 40%),
+    radial-gradient(ellipse at 50% 100%, rgba(140,90,30,0.08) 0%, transparent 40%);
+  pointer-events:none;z-index:3;
+}
+
+/* Bottom roller */
+.scroll-roller-bottom{
+  width:100%;height:38px;
+  background:linear-gradient(to bottom,
+    var(--parchment-edge) 0%,
+    var(--parchment-dark) 30%,
+    var(--parchment) 50%,
+    var(--parchment-dark) 70%,
+    var(--parchment-edge) 100%);
+  border-radius:19px;
+  position:relative;z-index:2;
+  box-shadow:0 4px 16px rgba(0,0,0,0.4), inset 0 -1px 0 rgba(255,255,255,0.3);
+  transform:translateY(0);
+  transition:transform 1.1s cubic-bezier(0.22,1,0.36,1);
+}
+.scroll-roller-bottom::before,.scroll-roller-bottom::after{
+  content:'';
+  position:absolute;top:50%;transform:translateY(-50%);
+  width:18px;height:18px;border-radius:50%;
+  background:var(--gold);
+  box-shadow:0 2px 8px rgba(0,0,0,0.4);
+}
+.scroll-roller-bottom::before{left:12px;}
+.scroll-roller-bottom::after{right:12px;}
+
+.scroll-roller-bottom.unrolled{
+  transform:translateY(0);
+}
+
+/* ── LETTER CONTENT ── */
+.letter-genre-tag{
+  font-size:0.62rem;letter-spacing:0.16em;text-transform:uppercase;
+  color:var(--cherry);margin-bottom:0.9rem;
+  display:flex;align-items:center;gap:0.5rem;
+}
+.letter-genre-tag::before,.letter-genre-tag::after{
+  content:'';flex:1;height:1px;background:var(--parchment-edge);opacity:0.5;
+}
+
+.letter-salutation{
+  font-family:'IM Fell English',serif;
+  font-size:1.05rem;color:var(--ink-mid);
+  margin-bottom:0.3rem;font-style:italic;
+}
+
+.letter-title{
+  font-family:'Playfair Display',serif;
+  font-size:1.4rem;font-weight:500;
+  color:var(--ink);line-height:1.3;
+  margin-bottom:1.2rem;
+}
+
+.letter-divider{
+  width:100%;height:1px;
+  background:linear-gradient(to right,transparent,var(--parchment-edge),transparent);
+  margin-bottom:1.2rem;
+}
+
+.letter-body{
+  font-family:'IM Fell English',serif;
+  font-size:0.97rem;color:var(--ink-mid);
+  line-height:1.9;font-weight:400;
+}
+.letter-body p{margin-bottom:1rem;}
+
+.letter-closing{
+  margin-top:1.4rem;
+  font-family:'IM Fell English',serif;
+  font-size:0.9rem;color:var(--ink);
+  font-style:italic;
+  display:flex;flex-direction:column;gap:0.15rem;
+}
+.letter-closing-line{color:var(--ink-mid);}
+.letter-signoff{
+  font-family:'Playfair Display',serif;
+  font-size:1.1rem;color:var(--cherry);
+  font-style:italic;margin-top:0.2rem;
+}
+
+/* Wax seal on letter */
+.letter-seal{
+  display:flex;justify-content:center;
+  margin-top:1.4rem;
+  padding-top:1rem;
+  border-top:1px solid rgba(184,136,42,0.2);
+}
+.letter-seal-circle{
+  width:52px;height:52px;border-radius:50%;
+  background:var(--cherry);
+  border:2px solid var(--gold);
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Playfair Display',serif;
+  font-size:1.1rem;color:var(--gold-light);
+  box-shadow:0 4px 16px rgba(0,0,0,0.3),
+             0 0 0 4px rgba(184,136,42,0.15);
+}
+
+/* ── SCROLL ACTIONS ── */
+.scroll-actions{
+  display:flex;gap:1rem;margin-top:1.8rem;
+  justify-content:center;
+  opacity:0;transform:translateY(10px);
+  transition:opacity 0.4s 1.3s ease, transform 0.4s 1.3s ease;
+}
+#stage-scroll.active .scroll-actions.show{
+  opacity:1;transform:translateY(0);
+}
+
+.btn-another{
+  background:rgba(245,240,232,0.08);
+  border:1px solid rgba(245,240,232,0.2);
+  color:var(--cream);
+  padding:0.5rem 1.4rem;border-radius:30px;
+  font-size:0.75rem;letter-spacing:0.08em;text-transform:uppercase;
+  cursor:pointer;font-family:'Lato',sans-serif;
+  transition:all 0.2s;
+}
+.btn-another:hover{background:rgba(245,240,232,0.15);}
+
+.btn-done{
+  background:var(--cherry);
+  border:none;
+  color:var(--cream);
+  padding:0.5rem 1.4rem;border-radius:30px;
+  font-size:0.75rem;letter-spacing:0.08em;text-transform:uppercase;
+  cursor:pointer;font-family:'Lato',sans-serif;
+  transition:background 0.2s;
+}
+.btn-done:hover{background:var(--cherry-deep);}
+
+/* ── KEYFRAMES ── */
+@keyframes fadeUp{
+  from{opacity:0;transform:translateY(18px);}
+  to{opacity:1;transform:translateY(0);}
+}
+@keyframes sealPulse{
+  0%,100%{box-shadow:0 0 0 6px rgba(184,136,42,0.2),0 8px 32px rgba(0,0,0,0.5);}
+  50%{box-shadow:0 0 0 12px rgba(184,136,42,0.08),0 8px 32px rgba(0,0,0,0.5);}
+}
+@keyframes scrollFloat{
+  0%,100%{transform:translateY(0px) rotate(-0.3deg);}
+  33%{transform:translateY(-8px) rotate(0.2deg);}
+  66%{transform:translateY(-4px) rotate(-0.15deg);}
+}
+@keyframes dustFloat{
+  0%{transform:translateY(0) translateX(0);opacity:0;}
+  10%{opacity:1;}
+  90%{opacity:0.3;}
+  100%{transform:translateY(-120px) translateX(20px);opacity:0;}
+}
+
+/* ── RESPONSIVE ── */
+@media(max-width:600px){
+  .scroll-content{padding:1.5rem 1.4rem 1.2rem;}
+  .letter-title{font-size:1.15rem;}
+  .genre-grid{grid-template-columns:repeat(2,1fr);}
+}
+</style>
 </head>
 <body>
 
-  <!-- NAVBAR -->
-  <nav class="ds-nav">
-    <div class="ds-logo">Dear<span>Stranger</span></div>
-    <div class="nav-links">
-      <button class="nav-link">Read</button>
-      <button class="nav-link">About</button>
-      <button class="nav-write">Write a letter</button>
+<canvas id="bg-canvas"></canvas>
+
+<nav class="ds-nav">
+  <a class="ds-logo" href="index.html">Dear<span>Stranger</span></a>
+  <button class="nav-back" onclick="history.back()">← Back</button>
+</nav>
+
+<!-- ══════════════ STAGE 1: GENRE ══════════════ -->
+<section id="stage-genre">
+  <p class="genre-eyebrow">Step into the archive</p>
+  <h1 class="genre-heading">What do you wish to<br><em>feel today?</em></h1>
+  <p class="genre-sub">Choose a thread. A letter awaits.</p>
+
+  <div class="genre-grid" id="genre-grid">
+    <div class="genre-card" data-genre="Love">
+      <span class="genre-icon">🌹</span>
+      <div class="genre-label">Love</div>
+      <div class="genre-desc">tender & aching</div>
     </div>
-  </nav>
-
-  <!-- HERO -->
-  <div class="ds-hero">
-    <p class="hero-eyebrow">Anonymous Letters</p>
-    <h1 class="hero-title">Words from<br><em>someone, somewhere</em></h1>
-    <p class="hero-subtitle">Read what strangers dared to say</p>
-    <div class="ds-divider"></div>
-  </div>
-
-  <!-- FILTERS -->
-  <div class="ds-filters" id="filters">
-    <button class="filter-pill active" data-genre="All">All</button>
-    <button class="filter-pill" data-genre="Grief">Grief</button>
-    <button class="filter-pill" data-genre="Love">Love</button>
-    <button class="filter-pill" data-genre="Nostalgia">Nostalgia</button>
-    <button class="filter-pill" data-genre="Apology">Apology</button>
-    <button class="filter-pill" data-genre="Hope">Hope</button>
-    <button class="filter-pill" data-genre="Anger">Anger</button>
-    <button class="filter-pill" data-genre="Joy">Joy</button>
-  </div>
-
-  <!-- SORT ROW -->
-  <div class="sort-row">
-    <span class="sort-label">Sort by</span>
-    <select class="sort-select" id="sort-select">
-      <option value="recent">Most recent</option>
-      <option value="loved">Most loved</option>
-      <option value="short">Shortest read</option>
-    </select>
-  </div>
-
-  <!-- CARD GRID -->
-  <div class="ds-grid" id="card-grid">
-    <!-- Cards injected by JS -->
-  </div>
-
-  <!-- AI STRIP -->
-  <div class="ai-strip">
-    <div class="ai-strip-left">
-      <div class="ai-icon">
-        <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke="#f5f0e8">
-          <circle cx="12" cy="12" r="3"/>
-          <path d="M12 2v3M12 19v3M2 12h3M19 12h3"/>
-        </svg>
-      </div>
-      <div>
-        <div class="ai-text-head">Curated for your mood</div>
-        <div class="ai-text-sub">AI recommendations based on what you've been reading</div>
-      </div>
+    <div class="genre-card" data-genre="Grief">
+      <span class="genre-icon">🕯️</span>
+      <div class="genre-label">Grief</div>
+      <div class="genre-desc">quiet & heavy</div>
     </div>
-    <button class="ai-btn" id="ai-btn">Try it</button>
-  </div>
-
-  <!-- PAGINATION -->
-  <div class="ds-pagination" id="pagination">
-    <button class="page-btn active">1</button>
-    <button class="page-btn">2</button>
-    <button class="page-btn">3</button>
-    <button class="page-btn">···</button>
-    <button class="page-btn">12</button>
-  </div>
-
-  <!-- MODAL -->
-  <div class="modal-overlay" id="modal-overlay">
-    <div class="modal" id="modal-box" role="dialog" aria-modal="true">
-      <button class="modal-close" id="modal-close" aria-label="Close">✕</button>
-      <div class="modal-genre" id="m-genre"></div>
-      <div class="modal-title" id="m-title"></div>
-      <div class="modal-body" id="m-body"></div>
-      <div class="modal-footer">
-        <div class="modal-meta" id="m-meta"></div>
-        <button class="action-btn" id="modal-like-btn">
-          <svg viewBox="0 0 24 24" width="14" height="14">
-            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
-          </svg>
-          Save
-        </button>
-      </div>
+    <div class="genre-card" data-genre="Hope">
+      <span class="genre-icon">🌅</span>
+      <div class="genre-label">Hope</div>
+      <div class="genre-desc">fragile & bright</div>
+    </div>
+    <div class="genre-card" data-genre="Nostalgia">
+      <span class="genre-icon">🍂</span>
+      <div class="genre-label">Nostalgia</div>
+      <div class="genre-desc">warm & distant</div>
+    </div>
+    <div class="genre-card" data-genre="Apology">
+      <span class="genre-icon">🤍</span>
+      <div class="genre-label">Apology</div>
+      <div class="genre-desc">raw & honest</div>
+    </div>
+    <div class="genre-card" data-genre="Anger">
+      <span class="genre-icon">🔥</span>
+      <div class="genre-label">Anger</div>
+      <div class="genre-desc">sharp & real</div>
+    </div>
+    <div class="genre-card" data-genre="Joy">
+      <span class="genre-icon">✨</span>
+      <div class="genre-label">Joy</div>
+      <div class="genre-desc">light & free</div>
+    </div>
+    <div class="genre-card" data-genre="Longing">
+      <span class="genre-icon">🌙</span>
+      <div class="genre-label">Longing</div>
+      <div class="genre-desc">soft & restless</div>
     </div>
   </div>
 
-  <script src="script.js"></script>
+  <button class="genre-proceed" id="proceed-btn">
+    Unseal the letter &nbsp;✦
+  </button>
+</section>
+
+<!-- ══════════════ STAGE 2: SCROLL ══════════════ -->
+<section id="stage-scroll">
+
+  <!-- Wax seal loading moment -->
+  <div class="seal-overlay" id="seal-overlay">
+    <div class="wax-seal">✦</div>
+    <div class="seal-text">Breaking the seal...</div>
+  </div>
+
+  <!-- The actual scroll -->
+  <div style="display:flex;flex-direction:column;align-items:center;width:100%;padding:5rem 1rem 2rem;position:relative;z-index:2;">
+    <div class="scroll-wrap" id="scroll-wrap">
+      <!-- Top roller -->
+      <div class="scroll-roller"></div>
+
+      <!-- Parchment body -->
+      <div class="scroll-body" id="scroll-body">
+        <div class="scroll-content" id="scroll-content">
+          <!-- Letter injected by JS -->
+        </div>
+      </div>
+
+      <!-- Bottom roller -->
+      <div class="scroll-roller-bottom" id="scroll-roller-bottom"></div>
+    </div>
+
+    <!-- Actions below scroll -->
+    <div class="scroll-actions" id="scroll-actions">
+      <button class="btn-another" id="btn-another">Another letter ↺</button>
+      <button class="btn-done" onclick="window.location.href='index.html'">Done reading</button>
+    </div>
+  </div>
+
+</section>
+
+<script>
+// ── LETTER DATA ──────────────────────────────────────────
+const letters = {
+  Love: [
+    {
+      title: "To the one who never knew how much space they took up in my mind",
+      body: [
+        "I never told you. I rehearsed it a hundred times — in the shower, on the bus, in the dark at 2am. The words always came out wrong, or too late, or both.",
+        "There's a version of that Tuesday afternoon that still belongs to you. The bench. The way you laughed at something I said and I thought: this. This is what I want. And I said nothing.",
+        "I hope whoever is in your life now knows how lucky they are. I hope you laugh like that every single day.",
+      ],
+      closing: "With everything I never said,",
+    },
+    {
+      title: "Dear stranger, I think I loved someone who didn't exist",
+      body: [
+        "I built you so carefully. Every silence you had, I filled with something beautiful. Every absence I turned into mystery. You were my finest piece of fiction.",
+        "When the real you arrived — ordinary, tired, sometimes unkind — I grieved the invented one more than I should have.",
+        "I'm learning now that love should be given to people, not to the stories we write about them.",
+      ],
+      closing: "Still learning,",
+    },
+  ],
+  Grief: [
+    {
+      title: "Dear Dad, I still set an extra plate",
+      body: [
+        "It has been three years and my hands still do it automatically. I don't know if that's grief or habit or love that has nowhere to go anymore.",
+        "I made your chai last Sunday. Nobody asked me to. I just did it and then stood there holding the cup and the whole kitchen felt like a place I was visiting from somewhere very far away.",
+        "I hope wherever you are has good tea, bad jokes, and all the time in the world.",
+      ],
+      closing: "Missing you every ordinary day,",
+    },
+    {
+      title: "To the version of me that existed before",
+      body: [
+        "You didn't know it was the last normal morning. You made coffee, checked your phone, thought about what to have for dinner. You had no idea.",
+        "I want to reach back and hold your hand. Warn you. But I also know that not knowing was its own kind of mercy.",
+        "I carry you with me. The before-version. She deserved better and so do I.",
+      ],
+      closing: "With gentleness,",
+    },
+  ],
+  Hope: [
+    {
+      title: "A letter to whoever finds this on a bad day",
+      body: [
+        "I wrote this at my lowest. I want someone who is there right now to read it and know — it passed for me. It will pass for you too.",
+        "The sky was still that same color when things got better. The coffee still tasted like coffee. Small things became big things again, quietly, without announcement.",
+        "Hold on. Stay. The world gets its color back. I promise.",
+      ],
+      closing: "From someone who made it through,",
+    },
+  ],
+  Nostalgia: [
+    {
+      title: "The summer we didn't know was the last one",
+      body: [
+        "We stayed up until 4am on that rooftop talking about everything we were going to do. We were so certain. Youth is wasted on the certain.",
+        "Nothing has gone the way we planned and I don't even think I'm sad about it. I'm just struck by how sure we were. That certainty was its own kind of beautiful.",
+        "I wonder where you are now. I wonder if you ever think of that rooftop.",
+      ],
+      closing: "Warmly, from that rooftop,",
+    },
+  ],
+  Apology: [
+    {
+      title: "To my younger self — I'm sorry I was so unkind",
+      body: [
+        "You were doing your best. You didn't know it then. You just felt wrong all the time — in every room, every photograph, every mirror.",
+        "You were scared. Scared and trying too hard to be something you had never seen modeled for you. You were building yourself in the dark without a blueprint.",
+        "I see you now. I'm proud of you. You made it to here — and here is better than you thought it could be.",
+      ],
+      closing: "With the love you deserved then,",
+    },
+  ],
+  Anger: [
+    {
+      title: "To the people who said I was too much",
+      body: [
+        "You were right. I was too much. Too loud, too feeling, too honest, too present. I was too much for rooms that were designed to keep people small.",
+        "I spent years shrinking. Turning down the volume on myself. I got very good at it and I am still unlearning it.",
+        "I am too much. And I am exactly enough. Both things are true and neither one requires your permission.",
+      ],
+      closing: "Unapologetically,",
+    },
+  ],
+  Joy: [
+    {
+      title: "To the stranger on the train who was reading my favorite book",
+      body: [
+        "I almost said something. You had the same dog-eared copy I do, the spine broken at the same chapter. I wanted to ask if it changed you the way it changed me.",
+        "I didn't say anything. But for those forty minutes we were reading the same world at the same time and that felt like something.",
+        "I hope you finished it. I hope it was everything.",
+      ],
+      closing: "From the seat across from you,",
+    },
+  ],
+  Longing: [
+    {
+      title: "I keep thinking about a version of my life I chose not to live",
+      body: [
+        "There is a door I didn't open. A city I didn't move to. A conversation I let end too soon. I don't know what's behind it anymore — only that I still sometimes stand in front of it.",
+        "I made the right choice. I believe that. And still there are Tuesday evenings when I wonder about the life that was running parallel to this one, just out of reach.",
+        "Maybe longing is just love with nowhere to land. Maybe that's okay.",
+      ],
+      closing: "Still wondering,",
+    },
+  ],
+};
+
+// ── STATE ────────────────────────────────────────────────
+let selectedGenre = null;
+let currentLetter = null;
+
+// ── PARTICLE CANVAS ──────────────────────────────────────
+(function initParticles() {
+  const canvas = document.getElementById('bg-canvas');
+  const ctx = canvas.getContext('2d');
+  let W, H, particles = [];
+
+  function resize() {
+    W = canvas.width = window.innerWidth;
+    H = canvas.height = window.innerHeight;
+  }
+
+  function Particle() {
+    this.x = Math.random() * W;
+    this.y = Math.random() * H;
+    this.r = Math.random() * 1.2 + 0.3;
+    this.speed = Math.random() * 0.3 + 0.1;
+    this.drift = (Math.random() - 0.5) * 0.3;
+    this.alpha = Math.random() * 0.5 + 0.1;
+  }
+
+  Particle.prototype.update = function() {
+    this.y -= this.speed;
+    this.x += this.drift;
+    if (this.y < -5) { this.y = H + 5; this.x = Math.random() * W; }
+  };
+
+  function init() {
+    resize();
+    particles = Array.from({length: 60}, () => new Particle());
+  }
+
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+    particles.forEach(p => {
+      p.update();
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(193,96,106,${p.alpha})`;
+      ctx.fill();
+    });
+    requestAnimationFrame(draw);
+  }
+
+  window.addEventListener('resize', resize);
+  init(); draw();
+})();
+
+// ── GENRE SELECTION ──────────────────────────────────────
+document.querySelectorAll('.genre-card').forEach(card => {
+  card.addEventListener('click', () => {
+    document.querySelectorAll('.genre-card').forEach(c => c.classList.remove('selected'));
+    card.classList.add('selected');
+    selectedGenre = card.dataset.genre;
+    const btn = document.getElementById('proceed-btn');
+    btn.classList.add('visible');
+  });
+});
+
+// ── PROCEED → SHOW SCROLL ────────────────────────────────
+document.getElementById('proceed-btn').addEventListener('click', () => {
+  if (!selectedGenre) return;
+
+  // Exit genre stage
+  const genreStage = document.getElementById('stage-genre');
+  genreStage.classList.add('exit');
+
+  // Pick a letter
+  const pool = letters[selectedGenre] || letters['Love'];
+  currentLetter = pool[Math.floor(Math.random() * pool.length)];
+
+  // Show scroll stage with seal overlay
+  const scrollStage = document.getElementById('stage-scroll');
+  scrollStage.classList.add('active');
+
+  // After 1.6s: hide seal, inject letter, unroll scroll
+  setTimeout(() => {
+    injectLetter(currentLetter);
+
+    const seal = document.getElementById('seal-overlay');
+    seal.classList.add('gone');
+
+    setTimeout(() => {
+      document.getElementById('scroll-body').classList.add('unrolled');
+      setTimeout(() => {
+        const actions = document.getElementById('scroll-actions');
+        actions.classList.add('show');
+      }, 1000);
+    }, 200);
+
+  }, 1600);
+});
+
+// ── INJECT LETTER INTO SCROLL ────────────────────────────
+function injectLetter(letter) {
+  const container = document.getElementById('scroll-content');
+  container.innerHTML = `
+    <div class="letter-genre-tag">${selectedGenre}</div>
+    <div class="letter-salutation">Dear Stranger,</div>
+    <div class="letter-title">${letter.title}</div>
+    <div class="letter-divider"></div>
+    <div class="letter-body">
+      ${letter.body.map(p => `<p>${p}</p>`).join('')}
+    </div>
+    <div class="letter-closing">
+      <span class="letter-closing-line">${letter.closing}</span>
+      <span class="letter-signoff">— A Stranger</span>
+    </div>
+    <div class="letter-seal">
+      <div class="letter-seal-circle">✦</div>
+    </div>
+  `;
+}
+
+// ── ANOTHER LETTER ───────────────────────────────────────
+document.getElementById('btn-another').addEventListener('click', () => {
+  // Roll up scroll
+  const body = document.getElementById('scroll-body');
+  body.classList.remove('unrolled');
+  document.getElementById('scroll-actions').classList.remove('show');
+
+  setTimeout(() => {
+    // Pick new letter
+    const pool = letters[selectedGenre] || letters['Love'];
+    let next;
+    do { next = pool[Math.floor(Math.random() * pool.length)]; }
+    while (pool.length > 1 && next === currentLetter);
+    currentLetter = next;
+    injectLetter(currentLetter);
+
+    // Unroll again
+    setTimeout(() => {
+      body.classList.add('unrolled');
+      setTimeout(() => {
+        document.getElementById('scroll-actions').classList.add('show');
+      }, 1000);
+    }, 300);
+  }, 700);
+});
+</script>
 </body>
 </html>
