@@ -552,214 +552,93 @@ html,body{
 
 </section>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
 <script>
-// ── LETTER DATA ──────────────────────────────────────────
-const letters = {
-  Love: [
-    {
-      title: "To the one who never knew how much space they took up in my mind",
-      body: [
-        "I never told you. I rehearsed it a hundred times — in the shower, on the bus, in the dark at 2am. The words always came out wrong, or too late, or both.",
-        "There's a version of that Tuesday afternoon that still belongs to you. The bench. The way you laughed at something I said and I thought: this. This is what I want. And I said nothing.",
-        "I hope whoever is in your life now knows how lucky they are. I hope you laugh like that every single day.",
-      ],
-      closing: "With everything I never said,",
-    },
-    {
-      title: "Dear stranger, I think I loved someone who didn't exist",
-      body: [
-        "I built you so carefully. Every silence you had, I filled with something beautiful. Every absence I turned into mystery. You were my finest piece of fiction.",
-        "When the real you arrived — ordinary, tired, sometimes unkind — I grieved the invented one more than I should have.",
-        "I'm learning now that love should be given to people, not to the stories we write about them.",
-      ],
-      closing: "Still learning,",
-    },
-  ],
-  Grief: [
-    {
-      title: "Dear Dad, I still set an extra plate",
-      body: [
-        "It has been three years and my hands still do it automatically. I don't know if that's grief or habit or love that has nowhere to go anymore.",
-        "I made your chai last Sunday. Nobody asked me to. I just did it and then stood there holding the cup and the whole kitchen felt like a place I was visiting from somewhere very far away.",
-        "I hope wherever you are has good tea, bad jokes, and all the time in the world.",
-      ],
-      closing: "Missing you every ordinary day,",
-    },
-    {
-      title: "To the version of me that existed before",
-      body: [
-        "You didn't know it was the last normal morning. You made coffee, checked your phone, thought about what to have for dinner. You had no idea.",
-        "I want to reach back and hold your hand. Warn you. But I also know that not knowing was its own kind of mercy.",
-        "I carry you with me. The before-version. She deserved better and so do I.",
-      ],
-      closing: "With gentleness,",
-    },
-  ],
-  Hope: [
-    {
-      title: "A letter to whoever finds this on a bad day",
-      body: [
-        "I wrote this at my lowest. I want someone who is there right now to read it and know — it passed for me. It will pass for you too.",
-        "The sky was still that same color when things got better. The coffee still tasted like coffee. Small things became big things again, quietly, without announcement.",
-        "Hold on. Stay. The world gets its color back. I promise.",
-      ],
-      closing: "From someone who made it through,",
-    },
-  ],
-  Nostalgia: [
-    {
-      title: "The summer we didn't know was the last one",
-      body: [
-        "We stayed up until 4am on that rooftop talking about everything we were going to do. We were so certain. Youth is wasted on the certain.",
-        "Nothing has gone the way we planned and I don't even think I'm sad about it. I'm just struck by how sure we were. That certainty was its own kind of beautiful.",
-        "I wonder where you are now. I wonder if you ever think of that rooftop.",
-      ],
-      closing: "Warmly, from that rooftop,",
-    },
-  ],
-  Apology: [
-    {
-      title: "To my younger self — I'm sorry I was so unkind",
-      body: [
-        "You were doing your best. You didn't know it then. You just felt wrong all the time — in every room, every photograph, every mirror.",
-        "You were scared. Scared and trying too hard to be something you had never seen modeled for you. You were building yourself in the dark without a blueprint.",
-        "I see you now. I'm proud of you. You made it to here — and here is better than you thought it could be.",
-      ],
-      closing: "With the love you deserved then,",
-    },
-  ],
-  Anger: [
-    {
-      title: "To the people who said I was too much",
-      body: [
-        "You were right. I was too much. Too loud, too feeling, too honest, too present. I was too much for rooms that were designed to keep people small.",
-        "I spent years shrinking. Turning down the volume on myself. I got very good at it and I am still unlearning it.",
-        "I am too much. And I am exactly enough. Both things are true and neither one requires your permission.",
-      ],
-      closing: "Unapologetically,",
-    },
-  ],
-  Joy: [
-    {
-      title: "To the stranger on the train who was reading my favorite book",
-      body: [
-        "I almost said something. You had the same dog-eared copy I do, the spine broken at the same chapter. I wanted to ask if it changed you the way it changed me.",
-        "I didn't say anything. But for those forty minutes we were reading the same world at the same time and that felt like something.",
-        "I hope you finished it. I hope it was everything.",
-      ],
-      closing: "From the seat across from you,",
-    },
-  ],
-  Longing: [
-    {
-      title: "I keep thinking about a version of my life I chose not to live",
-      body: [
-        "There is a door I didn't open. A city I didn't move to. A conversation I let end too soon. I don't know what's behind it anymore — only that I still sometimes stand in front of it.",
-        "I made the right choice. I believe that. And still there are Tuesday evenings when I wonder about the life that was running parallel to this one, just out of reach.",
-        "Maybe longing is just love with nowhere to land. Maybe that's okay.",
-      ],
-      closing: "Still wondering,",
-    },
-  ],
-};
+const supabaseClient = supabase.createClient(
+  "https://enpahwdrfcfqfijpdztm.supabase.co",
+   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVucGFod2RyZmNmcWZpanBkenRtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc3MzMzOTAsImV4cCI6MjA5MzMwOTM5MH0.DY-gka8GH-TU1kS0pYfG1EaJEkFdjSJAaryE2TuSqs4"
+);
 
-// ── STATE ────────────────────────────────────────────────
+// STATE
 let selectedGenre = null;
 let currentLetter = null;
 
-// ── PARTICLE CANVAS ──────────────────────────────────────
-(function initParticles() {
-  const canvas = document.getElementById('bg-canvas');
-  const ctx = canvas.getContext('2d');
-  let W, H, particles = [];
-
-  function resize() {
-    W = canvas.width = window.innerWidth;
-    H = canvas.height = window.innerHeight;
-  }
-
-  function Particle() {
-    this.x = Math.random() * W;
-    this.y = Math.random() * H;
-    this.r = Math.random() * 1.2 + 0.3;
-    this.speed = Math.random() * 0.3 + 0.1;
-    this.drift = (Math.random() - 0.5) * 0.3;
-    this.alpha = Math.random() * 0.5 + 0.1;
-  }
-
-  Particle.prototype.update = function() {
-    this.y -= this.speed;
-    this.x += this.drift;
-    if (this.y < -5) { this.y = H + 5; this.x = Math.random() * W; }
-  };
-
-  function init() {
-    resize();
-    particles = Array.from({length: 60}, () => new Particle());
-  }
-
-  function draw() {
-    ctx.clearRect(0, 0, W, H);
-    particles.forEach(p => {
-      p.update();
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-      ctx.fillStyle = `rgba(193,96,106,${p.alpha})`;
-      ctx.fill();
-    });
-    requestAnimationFrame(draw);
-  }
-
-  window.addEventListener('resize', resize);
-  init(); draw();
-})();
-
-// ── GENRE SELECTION ──────────────────────────────────────
+// GENRE SELECT
 document.querySelectorAll('.genre-card').forEach(card => {
   card.addEventListener('click', () => {
     document.querySelectorAll('.genre-card').forEach(c => c.classList.remove('selected'));
     card.classList.add('selected');
     selectedGenre = card.dataset.genre;
-    const btn = document.getElementById('proceed-btn');
-    btn.classList.add('visible');
+    document.getElementById('proceed-btn').classList.add('visible');
   });
 });
 
-// ── PROCEED → SHOW SCROLL ────────────────────────────────
-document.getElementById('proceed-btn').addEventListener('click', () => {
+// MAIN BUTTON CLICK
+document.getElementById('proceed-btn').addEventListener('click', async () => {
   if (!selectedGenre) return;
 
-  // Exit genre stage
-  const genreStage = document.getElementById('stage-genre');
-  genreStage.classList.add('exit');
+  document.getElementById('stage-genre').classList.add('exit');
+  document.getElementById('stage-scroll').classList.add('active');
 
-  // Pick a letter
-  const pool = letters[selectedGenre] || letters['Love'];
-  currentLetter = pool[Math.floor(Math.random() * pool.length)];
+  // show loading first
+  currentLetter = {
+    title: "Loading...",
+    body: ["Fetching letter..."],
+    closing: "—"
+  };
+  injectLetter(currentLetter);
 
-  // Show scroll stage with seal overlay
-  const scrollStage = document.getElementById('stage-scroll');
-  scrollStage.classList.add('active');
+  try {
+    const { data, error } = await supabaseClient
+      .from('letters')
+      .select('*')
+      .eq('genre', selectedGenre);
 
-  // After 1.6s: hide seal, inject letter, unroll scroll
+    if (error) throw error;
+
+    if (!data || data.length === 0) {
+      currentLetter = {
+        title: "No letters yet",
+        body: ["Be the first to write one ✦"],
+        closing: "—"
+      };
+    } else {
+      const random = data[Math.floor(Math.random() * data.length)];
+
+      currentLetter = {
+        title: random.title,
+        body: random.content.split("\n"),
+        closing: "— A Stranger"
+      };
+    }
+
+  } catch (err) {
+    console.error(err);
+    currentLetter = {
+      title: "Error loading",
+      body: ["Something went wrong."],
+      closing: "—"
+    };
+  }
+
+  // animation flow stays SAME
   setTimeout(() => {
     injectLetter(currentLetter);
-
-    const seal = document.getElementById('seal-overlay');
-    seal.classList.add('gone');
+    document.getElementById('seal-overlay').classList.add('gone');
 
     setTimeout(() => {
       document.getElementById('scroll-body').classList.add('unrolled');
+
       setTimeout(() => {
-        const actions = document.getElementById('scroll-actions');
-        actions.classList.add('show');
+        document.getElementById('scroll-actions').classList.add('show');
       }, 1000);
+
     }, 200);
 
   }, 1600);
 });
 
-// ── INJECT LETTER INTO SCROLL ────────────────────────────
+// RENDER FUNCTION
 function injectLetter(letter) {
   const container = document.getElementById('scroll-content');
   container.innerHTML = `
@@ -780,29 +659,40 @@ function injectLetter(letter) {
   `;
 }
 
-// ── ANOTHER LETTER ───────────────────────────────────────
-document.getElementById('btn-another').addEventListener('click', () => {
-  // Roll up scroll
-  const body = document.getElementById('scroll-body');
-  body.classList.remove('unrolled');
+// ANOTHER LETTER BUTTON
+document.getElementById('btn-another').addEventListener('click', async () => {
+  if (!selectedGenre) return;
+
+  const { data } = await supabaseClient
+    .from('letters')
+    .select('*')
+    .eq('genre', selectedGenre);
+
+  if (!data || data.length === 0) return;
+
+  const random = data[Math.floor(Math.random() * data.length)];
+
+  currentLetter = {
+    title: random.title,
+    body: random.content.split("\n"),
+    closing: "— A Stranger"
+  };
+
+  document.getElementById('scroll-body').classList.remove('unrolled');
   document.getElementById('scroll-actions').classList.remove('show');
 
   setTimeout(() => {
-    // Pick new letter
-    const pool = letters[selectedGenre] || letters['Love'];
-    let next;
-    do { next = pool[Math.floor(Math.random() * pool.length)]; }
-    while (pool.length > 1 && next === currentLetter);
-    currentLetter = next;
     injectLetter(currentLetter);
 
-    // Unroll again
     setTimeout(() => {
-      body.classList.add('unrolled');
+      document.getElementById('scroll-body').classList.add('unrolled');
+
       setTimeout(() => {
         document.getElementById('scroll-actions').classList.add('show');
       }, 1000);
+
     }, 300);
+
   }, 700);
 });
 </script>

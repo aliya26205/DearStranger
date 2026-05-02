@@ -1,13 +1,152 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Dear Stranger</title>
-  <link rel="stylesheet" href="styles.css">
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>DearStranger</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;1,400&family=IM+Fell+English:ital@0;1&family=Lato:wght@300;400&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --cherry:#7a1c1c;--cherry-deep:#5e1515;--rose:#c1606a;
+  --cream:#f5f0e8;--parchment:#fdf8f2;--border:#ddc8b8;
+  --text-dark:#3a1010;--text-mid:#7a5050;--text-muted:#9a6060;
+  --gold:#b8882a;--gold-light:#d4aa50;
+}
+html,body{min-height:100vh;background:var(--cream);font-family:'Lato',sans-serif;color:var(--text-dark);overflow-x:hidden;}
+#bg-canvas{position:fixed;inset:0;pointer-events:none;z-index:0;opacity:0.5;}
+
+/* NAV */
+nav{position:fixed;top:0;left:0;right:0;padding:1.1rem 2.5rem;display:flex;justify-content:space-between;align-items:center;z-index:50;background:linear-gradient(to bottom,rgba(245,240,232,0.97),rgba(245,240,232,0));}
+.logo{font-family:'Playfair Display',serif;font-size:1.35rem;color:var(--cherry);letter-spacing:0.02em;text-decoration:none;}
+.logo span{color:var(--rose);font-style:italic;}
+.nav-right{display:flex;gap:1.2rem;align-items:center;}
+.nav-link{font-size:0.75rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-muted);background:none;border:none;cursor:pointer;font-family:'Lato',sans-serif;text-decoration:none;transition:color 0.2s;}
+.nav-link:hover{color:var(--cherry);}
+
+/* HERO */
+.hero{position:relative;z-index:1;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:6rem 1.5rem 4rem;}
+.hero-eyebrow{font-size:0.68rem;letter-spacing:0.25em;text-transform:uppercase;color:var(--rose);margin-bottom:1.2rem;animation:fadeUp 0.7s ease both;}
+.hero-emblem{margin-bottom:0.4rem;animation:fadeUp 0.7s 0.05s ease both;}
+.hero-title{font-family:'Playfair Display',serif;font-size:clamp(3rem,8vw,5.5rem);font-weight:400;color:var(--cherry);line-height:1.05;letter-spacing:-0.01em;margin-bottom:1rem;animation:fadeUp 0.7s 0.1s ease both;}
+.hero-title em{color:var(--rose);font-style:italic;}
+.hero-tagline{font-family:'IM Fell English',serif;font-size:clamp(1rem,2.5vw,1.25rem);color:var(--text-mid);font-style:italic;font-weight:400;line-height:1.6;max-width:480px;margin:0 auto 0.8rem;animation:fadeUp 0.7s 0.18s ease both;}
+.hero-sub{font-size:0.82rem;color:var(--text-muted);font-weight:300;letter-spacing:0.04em;margin-bottom:3rem;animation:fadeUp 0.7s 0.24s ease both;}
+.hero-divider{width:40px;height:1px;background:var(--rose);opacity:0.4;margin:0 auto 3rem;animation:fadeUp 0.7s 0.28s ease both;}
+
+/* BUTTONS */
+.cta-group{display:flex;gap:1rem;flex-wrap:wrap;justify-content:center;animation:fadeUp 0.7s 0.32s ease both;}
+.btn-primary{background:var(--cherry);color:var(--cream);padding:0.8rem 2.2rem;border-radius:40px;font-size:0.82rem;letter-spacing:0.1em;text-transform:uppercase;text-decoration:none;font-family:'Lato',sans-serif;border:none;cursor:pointer;transition:background 0.2s,transform 0.2s,box-shadow 0.2s;box-shadow:0 4px 20px rgba(122,28,28,0.2);display:inline-flex;align-items:center;gap:0.5rem;}
+.btn-primary:hover{background:var(--cherry-deep);transform:translateY(-2px);box-shadow:0 8px 28px rgba(122,28,28,0.28);}
+.btn-secondary{background:transparent;color:var(--cherry);padding:0.8rem 2.2rem;border-radius:40px;border:1px solid #ddc8b8;font-size:0.82rem;letter-spacing:0.1em;text-transform:uppercase;text-decoration:none;font-family:'Lato',sans-serif;cursor:pointer;transition:all 0.2s;display:inline-flex;align-items:center;gap:0.5rem;}
+.btn-secondary:hover{border-color:var(--rose);background:rgba(122,28,28,0.04);transform:translateY(-2px);}
+
+/* SCROLL HINT */
+.scroll-hint{position:absolute;bottom:2.5rem;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:0.5rem;animation:fadeUp 1s 1s ease both;opacity:0.45;}
+.scroll-hint span{font-size:0.62rem;letter-spacing:0.15em;text-transform:uppercase;color:var(--text-muted);}
+.scroll-arrow{width:1px;height:36px;background:linear-gradient(to bottom,var(--rose),transparent);animation:arrowDrop 1.5s ease-in-out infinite;}
+
+/* ABOUT STRIP */
+.about-strip{position:relative;z-index:1;border-top:1px solid var(--border);padding:4rem 2rem;display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:2.5rem;max-width:900px;margin:0 auto;text-align:center;}
+.strip-icon{font-size:1.5rem;margin-bottom:0.7rem;display:block;}
+.strip-label{font-family:'Playfair Display',serif;font-size:1rem;color:var(--cherry);margin-bottom:0.4rem;}
+.strip-desc{font-size:0.8rem;color:var(--text-muted);line-height:1.7;font-weight:300;}
+
+/* FOOTER */
+footer{position:relative;z-index:1;border-top:1px solid var(--border);padding:1.5rem 2rem;text-align:center;font-size:0.7rem;color:var(--text-muted);letter-spacing:0.06em;}
+footer span{color:var(--rose);}
+
+/* ANIMATIONS */
+@keyframes fadeUp{from{opacity:0;transform:translateY(18px);}to{opacity:1;transform:translateY(0);}}
+@keyframes arrowDrop{0%,100%{transform:scaleY(1);opacity:0.45;}50%{transform:scaleY(1.3);opacity:0.8;}}
+
+@media(max-width:500px){
+  nav{padding:1rem 1.2rem;}
+  .cta-group{flex-direction:column;align-items:center;}
+  .btn-primary,.btn-secondary{width:100%;max-width:280px;justify-content:center;}
+}
+</style>
 </head>
 <body>
-  <h1>Dear Stranger 💌</h1>
 
-  <a href="write.html">Write a Letter</a>
-  <a href="read.html">Read Letters</a>
+<canvas id="bg-canvas"></canvas>
+
+<nav>
+  <a class="logo" href="#">Dear<span>Stranger</span></a>
+  <div class="nav-right">
+    <a class="nav-link" href="read.html">Read</a>
+    <a class="nav-link" href="write.html">Write</a>
+  </div>
+</nav>
+
+<section class="hero">
+  <p class="hero-eyebrow">An anonymous letter archive</p>
+
+  <div class="hero-emblem">
+    <svg width="80" height="60" viewBox="0 0 80 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M40 8 C30 8, 14 18, 14 30 C14 40, 24 48, 36 44 C44 41, 50 34, 48 26 C46 18, 38 16, 34 20 C30 24, 32 32, 38 34 C44 36, 52 30, 54 22 C58 10, 50 4, 40 8 Z" stroke="#c1606a" stroke-width="2" stroke-linecap="round" fill="none" opacity="0.7"/>
+      <path d="M42 34 C48 40, 58 50, 62 56" stroke="#c1606a" stroke-width="2" stroke-linecap="round" fill="none" opacity="0.5"/>
+    </svg>
+  </div>
+
+  <h1 class="hero-title">Dear<em>Stranger</em></h1>
+
+  <p class="hero-tagline">
+    A quiet place for words that needed to be written —<br/>
+    and strangers who needed to read them.
+  </p>
+  <p class="hero-sub">Anonymous · Free · Always open</p>
+  <div class="hero-divider"></div>
+
+  <div class="cta-group">
+    <a class="btn-primary" href="read.html"><span>✦</span> Read a Letter</a>
+    <a class="btn-secondary" href="write.html">Write to a Stranger</a>
+  </div>
+
+  <div class="scroll-hint">
+    <span>Scroll</span>
+    <div class="scroll-arrow"></div>
+  </div>
+</section>
+
+<section class="about-strip">
+  <div class="strip-item">
+    <span class="strip-icon">🤍</span>
+    <div class="strip-label">Completely Anonymous</div>
+    <div class="strip-desc">No names. No profiles. Just words — honest and unguarded.</div>
+  </div>
+  <div class="strip-item">
+    <span class="strip-icon">📜</span>
+    <div class="strip-label">Write Freely</div>
+    <div class="strip-desc">Pour it out. A confession, a love letter, a goodbye — it belongs here.</div>
+  </div>
+  <div class="strip-item">
+    <span class="strip-icon">🌹</span>
+    <div class="strip-label">Read by Mood</div>
+    <div class="strip-desc">Grief, joy, longing, hope — find the letter that finds you.</div>
+  </div>
+</section>
+
+<footer>
+  Made with <span>♥</span> for strangers everywhere &nbsp;·&nbsp; DearStranger © 2025
+</footer>
+
+<script>
+(function(){
+  const canvas = document.getElementById('bg-canvas');
+  const ctx = canvas.getContext('2d');
+  let W, H, particles = [];
+  function resize(){ W = canvas.width = window.innerWidth; H = canvas.height = window.innerHeight; }
+  function Particle(){ this.reset(); }
+  Particle.prototype.reset = function(){ this.x=Math.random()*W; this.y=Math.random()*H; this.r=Math.random()*1.5+0.4; this.speed=Math.random()*0.25+0.08; this.drift=(Math.random()-0.5)*0.25; this.alpha=Math.random()*0.25+0.05; };
+  Particle.prototype.update = function(){ this.y-=this.speed; this.x+=this.drift; if(this.y<-5){this.reset();this.y=H+5;} };
+  function init(){ resize(); particles=Array.from({length:55},()=>new Particle()); }
+  function draw(){ ctx.clearRect(0,0,W,H); particles.forEach(p=>{ p.update(); ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,Math.PI*2); ctx.fillStyle=`rgba(193,96,106,${p.alpha})`; ctx.fill(); }); requestAnimationFrame(draw); }
+  window.addEventListener('resize',resize);
+  init(); draw();
+})();
+</script>
 </body>
 </html>

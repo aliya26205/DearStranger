@@ -753,100 +753,37 @@ html,body{
     <button class="btn-go-read" onclick="window.location.href='read.html'">Read a letter</button>
   </div>
 </section>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
 
 <script>
-// ── PARTICLE CANVAS ──────────────────────────────────────
-(function initParticles() {
-  const canvas = document.getElementById('bg-canvas');
-  const ctx = canvas.getContext('2d');
-  let W, H, particles = [];
+// 🔥 SUPABASE INIT (TOP LEVEL)
+const supabaseClient = supabase.createClient(
+  "https://enpahwdrfcfqfijpdztm.supabase.co",
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVucGFod2RyZmNmcWZpanBkenRtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc3MzMzOTAsImV4cCI6MjA5MzMwOTM5MH0.DY-gka8GH-TU1kS0pYfG1EaJEkFdjSJAaryE2TuSqs4"
+);
 
-  function resize() {
-    W = canvas.width = window.innerWidth;
-    H = canvas.height = window.innerHeight;
-  }
-
-  function Particle() {
-    this.x = Math.random() * W;
-    this.y = Math.random() * H;
-    this.r = Math.random() * 1.2 + 0.3;
-    this.speed = Math.random() * 0.3 + 0.1;
-    this.drift = (Math.random() - 0.5) * 0.3;
-    this.alpha = Math.random() * 0.5 + 0.1;
-  }
-
-  Particle.prototype.update = function() {
-    this.y -= this.speed;
-    this.x += this.drift;
-    if (this.y < -5) { this.y = H + 5; this.x = Math.random() * W; }
-  };
-
-  function init() {
-    resize();
-    particles = Array.from({length: 60}, () => new Particle());
-  }
-
-  function draw() {
-    ctx.clearRect(0, 0, W, H);
-    particles.forEach(p => {
-      p.update();
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-      ctx.fillStyle = `rgba(193,96,106,${p.alpha})`;
-      ctx.fill();
-    });
-    requestAnimationFrame(draw);
-  }
-
-  window.addEventListener('resize', resize);
-  init(); draw();
-})();
-
-// ── INK CURSOR TRAIL ─────────────────────────────────────
-(function initInkTrail() {
-  let lastDrop = 0;
-  document.addEventListener('mousemove', (e) => {
-    const now = Date.now();
-    if (now - lastDrop < 80) return;
-    lastDrop = now;
-    const drop = document.createElement('div');
-    drop.className = 'ink-drop';
-    drop.style.left = e.clientX + 'px';
-    drop.style.top = e.clientY + 'px';
-    document.body.appendChild(drop);
-    setTimeout(() => drop.remove(), 800);
-  });
-})();
-
-// ── STATE ────────────────────────────────────────────────
+// ── STATE ──
 let selectedGenre = null;
 
-// ── GENRE SELECTION ──────────────────────────────────────
+// ── GENRE SELECTION ──
 document.querySelectorAll('.genre-card').forEach(card => {
   card.addEventListener('click', () => {
     document.querySelectorAll('.genre-card').forEach(c => c.classList.remove('selected'));
     card.classList.add('selected');
     selectedGenre = card.dataset.genre;
-    const btn = document.getElementById('proceed-btn');
-    btn.classList.add('visible');
+    document.getElementById('proceed-btn').classList.add('visible');
   });
 });
 
-// ── PROCEED → SHOW SCROLL ────────────────────────────────
+// ── OPEN SCROLL ──
 document.getElementById('proceed-btn').addEventListener('click', () => {
   if (!selectedGenre) return;
 
-  // Exit genre stage
   document.getElementById('stage-genre').classList.add('exit');
+  document.getElementById('stage-scroll').classList.add('active');
 
-  // Show scroll stage with seal overlay
-  const scrollStage = document.getElementById('stage-scroll');
-  scrollStage.classList.add('active');
-
-  // Update genre tag inside form
   document.getElementById('form-genre-tag').textContent = selectedGenre;
 
-  // After 1.6s: hide seal, unroll scroll
   setTimeout(() => {
     document.getElementById('seal-overlay').classList.add('gone');
 
@@ -855,131 +792,109 @@ document.getElementById('proceed-btn').addEventListener('click', () => {
 
       setTimeout(() => {
         document.getElementById('submit-area').classList.add('show');
-        // Focus title
-        setTimeout(() => {
-          document.getElementById('letter-title').focus();
-        }, 200);
+        document.getElementById('letter-title').focus();
       }, 900);
+
     }, 200);
   }, 1600);
 });
 
-// ── CHARACTER COUNTER ────────────────────────────────────
-document.getElementById('letter-body').addEventListener('input', function() {
+// ── CHARACTER COUNTER ──
+document.getElementById('letter-body').addEventListener('input', function () {
   const len = this.value.length;
   const counter = document.getElementById('char-counter');
+
   counter.textContent = len + ' / 1200';
   counter.classList.toggle('warn', len > 1050);
 
-  // Auto-grow
   this.style.height = 'auto';
   this.style.height = this.scrollHeight + 'px';
 });
 
-// ── SUBMIT ───────────────────────────────────────────────
-document.getElementById('btn-submit').addEventListener('click', () => {
-  const title = document.getElementById('letter-title').value.trim();
-  const body  = document.getElementById('letter-body').value.trim();
+// ── SAVE TO SUPABASE ──
+document.getElementById('btn-submit').addEventListener('click', async () => {
 
-  if (!title && !body) {
-    // Gentle shake to prompt writing
-    const wrap = document.getElementById('scroll-body');
-    wrap.style.animation = 'none';
-    wrap.style.transition = 'transform 0.08s ease';
-    let shakes = 0;
-    const dirs = [-6, 6, -4, 4, -2, 2, 0];
-    const shake = () => {
-      if (shakes >= dirs.length) { wrap.style.transform = ''; return; }
-      wrap.style.transform = `translateX(${dirs[shakes]}px)`;
-      shakes++;
-      setTimeout(shake, 60);
-    };
-    shake();
-    // Hint
+  const title = document.getElementById('letter-title').value.trim();
+  const content = document.getElementById('letter-body').value.trim();
+
+  if (!title && !content) {
     document.getElementById('letter-title').focus();
     return;
   }
 
-  // Seal animation on button
+  try {
+    const { data, error } = await supabaseClient
+      .from('letters')
+      .insert([
+        {
+          title: title,
+          content: content,
+          genre: selectedGenre
+        }
+      ]);
+
+    if (error) throw error;
+
+    console.log("Saved:", data);
+
+  } catch (err) {
+    console.error(err);
+    alert("Failed to save letter");
+    return;
+  }
+
+  // ── SUCCESS ANIMATION ──
   const btn = document.getElementById('btn-submit');
+
   btn.style.transform = 'scale(0.9)';
-  btn.style.transition = 'transform 0.15s ease';
   setTimeout(() => {
     btn.style.transform = 'scale(1.15)';
+
     setTimeout(() => {
       btn.style.transform = '';
 
-      // Roll up scroll
       document.getElementById('scroll-body').classList.remove('unrolled');
       document.getElementById('submit-area').classList.remove('show');
 
       setTimeout(() => {
-        // Show success stage
         document.getElementById('stage-scroll').style.opacity = '0';
         document.getElementById('stage-scroll').style.pointerEvents = 'none';
         document.getElementById('stage-success').classList.add('active');
       }, 900);
+
     }, 120);
+
   }, 120);
 });
 
-// ── DISCARD ──────────────────────────────────────────────
+// ── DISCARD ──
 document.getElementById('btn-discard').addEventListener('click', () => {
-  if (!confirm('Discard this letter and start over?')) return;
+  if (!confirm('Discard this letter?')) return;
 
   document.getElementById('letter-title').value = '';
   document.getElementById('letter-body').value = '';
   document.getElementById('char-counter').textContent = '0 / 1200';
-
-  // Roll up, go back to genre
-  document.getElementById('scroll-body').classList.remove('unrolled');
-  document.getElementById('submit-area').classList.remove('show');
-
-  setTimeout(() => {
-    document.getElementById('stage-scroll').classList.remove('active');
-    document.getElementById('stage-scroll').style.opacity = '';
-    document.getElementById('stage-scroll').style.pointerEvents = '';
-    document.getElementById('seal-overlay').classList.remove('gone');
-
-    const genreStage = document.getElementById('stage-genre');
-    genreStage.classList.remove('exit');
-    genreStage.style.animation = 'none';
-    void genreStage.offsetWidth;
-    genreStage.style.animation = '';
-
-    // Deselect cards
-    document.querySelectorAll('.genre-card').forEach(c => c.classList.remove('selected'));
-    document.getElementById('proceed-btn').classList.remove('visible');
-    selectedGenre = null;
-  }, 800);
 });
 
-// ── WRITE ANOTHER ─────────────────────────────────────────
+// ── WRITE AGAIN ──
 document.getElementById('btn-write-another').addEventListener('click', () => {
-  // Reset success
+
   document.getElementById('stage-success').classList.remove('active');
 
-  // Reset form
   document.getElementById('letter-title').value = '';
   document.getElementById('letter-body').value = '';
   document.getElementById('char-counter').textContent = '0 / 1200';
 
-  // Reset scroll stage display
-  document.getElementById('stage-scroll').style.opacity = '';
-  document.getElementById('stage-scroll').style.pointerEvents = '';
   document.getElementById('stage-scroll').classList.remove('active');
   document.getElementById('seal-overlay').classList.remove('gone');
   document.getElementById('scroll-body').classList.remove('unrolled');
   document.getElementById('submit-area').classList.remove('show');
 
-  // Reset genre stage
-  const genreStage = document.getElementById('stage-genre');
-  genreStage.classList.remove('exit');
-  genreStage.style.opacity = '1';
-  genreStage.style.transform = '';
+  document.getElementById('stage-genre').classList.remove('exit');
 
   document.querySelectorAll('.genre-card').forEach(c => c.classList.remove('selected'));
   document.getElementById('proceed-btn').classList.remove('visible');
+
   selectedGenre = null;
 });
 </script>
